@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Caster's Call</title>
+  <style>
+    body {
+      margin: 0;
+      background: linear-gradient(to bottom, #1a3c34, #2e6b5e);
+      font-family: 'Arial', sans-serif;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    #game {
+      position: relative;
+      width: 900px;
+      padding: 20px 40px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+    .game-title-opponent, .game-title-player {
+      position: absolute; top: 0; height: 100%; writing-mode: vertical-rl; text-orientation: mixed;
+      font-size: 24px; font-weight: bold; color: #ffd700; text-align: center;
+      background: rgba(0,0,0,0.5); padding: 5px; border-radius: 5px;
+    }
+    .game-title-opponent { left: 5px; }
+    .game-title-player { right: 5px; }
+    .turn-info { text-align: center; margin: 8px 0; }
+    .turn-indicator { font-size: 22px; font-weight: bold; color: #ffd700; background: rgba(0,0,0,0.7); padding: 8px; border: 2px solid #ffd700; border-radius: 5px; display: inline-block; min-width: 180px; }
+    .turn-counter { font-size: 18px; font-weight: bold; color: #ffea00; background: rgba(0,0,0,0.7); padding: 6px 12px; border: 2px solid #ffea00; border-radius: 5px; display: inline-block; margin-left: 10px; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.02)} }
+    .zone {
+      border: 2px solid #ffd700; border-radius: 8px; padding: 10px; margin: 10px 0;
+      background: rgba(255,255,255,0.1); min-height: 170px; display: flex; overflow-x: auto; align-items: center;
+    }
+    .opponent-spell-zones, .opponent-monster-zones, .player-monster-zones, .player-spell-zones {
+      display: flex; gap: 5px; justify-content: center;
+    }
+    .player-monster-zone, .opponent-monster-zone, .player-spell-zone, .opponent-spell-zone {
+      width: 126px; height: 174px; border: 2px solid #ffd700; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1);
+      position: relative;
+    }
+    .opponent-monster-zone { background: rgba(255,0,0,0.1); }
+    .player-hand-container, .opponent-hand-container { display: flex; align-items: center; gap: 10px; }
+    .player-deck, .opponent-deck, .player-crypt, .opponent-crypt {
+      width: 100px; height: 150px; border: 2px solid #ffd700; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; text-align: center;
+      padding: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); font-size: 12px; color: #ffd700; cursor: pointer;
+    }
+    .player-deck.blue-deck, .opponent-deck.blue-deck { background: linear-gradient(to bottom, #172554, #93c5fd); }
+    .player-deck.red-deck, .opponent-deck.red-deck { background: linear-gradient(to bottom, #991b1b, #ef4444); }
+    .player-crypt, .opponent-crypt { background: linear-gradient(to bottom, #666, #333); }
+
+    /* CARD WITH ART */
+    .card {
+      width: 100px; height: 150px; border: 2px solid #333; border-radius: 8px; cursor: pointer;
+      background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important;
+      display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+      padding: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); transition: transform .2s, opacity .2s;
+      font-size: 11px; color: #fff; text-shadow: 1px 1px 2px #000; position: relative; overflow: hidden;
+    }
+    .card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4));
+      pointer-events: none; z-index: 0;
+    }
+    .card-name {
+      font-weight: bold; font-size: 12px; margin-bottom: auto; z-index: 1; text-align: center;
+    }
+    .card-stats {
+      font-size: 10px; text-align: center; z-index: 1; background: rgba(0,0,0,0.6); padding: 2px 4px; border-radius: 4px;
+    }
+    .card.opponent-hand::before {
+      background: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.9)) !important;
+    }
+    .card.opponent-hand .card-name { color: #888; }
+    .card.no-art {
+      background: linear-gradient(to bottom, #e0e0e0, #b0b0b0) !important;
+      color: #000; text-shadow: none;
+    }
+    .card.no-art::before { background: none !important; }
+
+    .card.opponent { border: 2px solid #ff0000; }
+    .card.opponent-hand { cursor: default; pointer-events: none; }
+    .card:hover:not(.opponent-hand):not(.has-attacked) { transform: scale(1.05); }
+    .card.played { filter: brightness(1.1); }
+    .card.selected { border: 3px solid #ffd700; transform: scale(1.1); }
+    .card.has-attacked { opacity: 0.6; cursor: default; }
+    .status {
+      display: flex; justify-content: space-between; margin: 10px 0; font-weight: bold;
+      background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px; align-items: center;
+    }
+    button {
+      padding: 10px 20px; margin: 5px; background: linear-gradient(to bottom, #ffd700, #ccac00);
+      border: none; border-radius: 5px; color: black; font-weight: bold; cursor: pointer;
+    }
+    button:hover { background: linear-gradient(to bottom, #ffea00, #d4b200); }
+    button:disabled { background: #666; cursor: not-allowed; }
+    #deck-selection-popup, #game-over-popup, #player-crypt-popup, #opponent-crypt-popup {
+      display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8); padding: 20px; border: 2px solid #ffd700; border-radius: 10px;
+      text-align: center; color: #ffd700; font-size: 24px; font-weight: bold; z-index: 1000;
+    }
+    .deck-button-blue, .deck-button-red {
+      background: linear-gradient(to bottom, #87ceeb, #4682b4); color: #ffd700; border: 1px solid #ffd700;
+      margin: 10px; padding: 15px 30px; font-size: 20px;
+    }
+    .deck-button-red { background: linear-gradient(to bottom, #ff9999, #cc6666); }
+    #notification {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.8); color: #ffd700; padding: 10px 20px; border: 2px solid #ffd700;
+      border-radius: 5px; font-size: 18px; font-weight: bold; z-index: 1001; opacity: 0;
+      transition: opacity .5s; pointer-events: none;
+    }
+    #notification.show { opacity: 1; }
+    .card.playable { border: 3px solid #00ff00 !important; box-shadow: 0 0 12px #00ff00; }
+    .card.unplayable { opacity: 0.7; }
+    .card-tooltip {
+      position: absolute; background: linear-gradient(to bottom, #1a1a1a, #333); border: 2px solid #ffd700;
+      border-radius: 12px; padding: 15px; max-width: 250px; font-size: 14px; color: #ffd700;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.8); z-index: 1002; opacity: 0; visibility: hidden;
+      transition: all .3s; pointer-events: none;
+    }
+    .card-tooltip.show { opacity: 1; visibility: visible; transform: translateY(-10px); }
+    .mana-crystals { display: inline-flex; gap: 4px; align-items: center; }
+    .mana-crystal {
+      width: 18px; height: 18px; border: 2px solid #ffd700; border-radius: 50%; background: #333;
+      transition: all .2s;
+    }
+    .mana-crystal.filled { background: #00ff00; box-shadow: 0 0 8px #00ff00; }
+    .mana-crystal.filled.blue { background: #87ceeb; box-shadow: 0 0 8px #87ceeb; }
+    .mana-crystal.filled.red { background: #ff6b6b; box-shadow: 0 0 8px #ff6b6b; }
+    .playable-zone {
+      border-color: #00ff00 !important;
+      box-shadow: 0 0 12px #00ff00;
+      background: rgba(0, 255, 0, 0.1) !important;
+      cursor: pointer;
+    }
+    .playable-zone:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 16px #00ff00;
+    }
+    .card.attackable {
+      border: 3px solid #ff4500 !important;
+      box-shadow: 0 0 12px #ff4500;
+      cursor: pointer;
+    }
+    .card.attack-target {
+      border: 3px solid #ff0000 !important;
+      box-shadow: 0 0 16px #ff0000;
+      cursor: crosshair;
+    }
+    #favor-button {
+      background: linear-gradient(to bottom, #ff6b6b, #ee5a52); color: white; border: 2px solid #ff4757;
+      font-weight: bold; box-shadow: 0 0 10px rgba(255,71,87,0.5);
+    }
+    #favor-button:hover:not(:disabled) { background: linear-gradient(to bottom, #ff8787, #ff6b6b); transform: scale(1.05); }
+    #favor-button:disabled { background: #666; border-color: #888; box-shadow: none; }
+    audio { display: none; }
+  </style>
+</head>
+<body>
+<div id="game">
+  <div class="game-title-opponent">Caster's Call</div>
+  <div class="game-title-player">Caster's Call</div>
+  <div class="turn-info">
+    <div class="turn-indicator" id="turn-indicator">Player's Turn</div>
+    <div class="turn-counter" id="turn-counter">Turn 1</div>
+  </div>
+  <div class="status">
+    <span id="opponent-life">Opponent Life: 20</span>
+    <div id="opponent-mana-crystals" class="mana-crystals"></div>
+    <span id="opponent-mana" style="display:none;">Opponent Mana: 1</span>
+  </div>
+  <div class="opponent-hand-container">
+    <div class="opponent-deck" id="opponent-deck">Deck: 30</div>
+    <div class="opponent-crypt" id="opponent-crypt">Crypt: 0</div>
+    <div class="opponent-hand zone"></div>
+  </div>
+  <div class="opponent-spell-zones">
+    <div class="opponent-spell-zone" id="opponent-spell-zone-1"></div>
+    <div class="opponent-spell-zone" id="opponent-spell-zone-2"></div>
+    <div class="opponent-spell-zone" id="opponent-spell-zone-3"></div>
+  </div>
+  <div class="opponent-monster-zones">
+    <div class="opponent-monster-zone" id="opponent-monster-zone-1"></div>
+    <div class="opponent-monster-zone" id="opponent-monster-zone-2"></div>
+    <div class="opponent-monster-zone" id="opponent-monster-zone-3"></div>
+    <div class="opponent-monster-zone" id="opponent-monster-zone-4"></div>
+    <div class="opponent-monster-zone" id="opponent-monster-zone-5"></div>
+  </div>
+  <div class="player-monster-zones">
+    <div class="player-monster-zone" id="player-monster-zone-1"></div>
+    <div class="player-monster-zone" id="player-monster-zone-2"></div>
+    <div class="player-monster-zone" id="player-monster-zone-3"></div>
+    <div class="player-monster-zone" id="player-monster-zone-4"></div>
+    <div class="player-monster-zone" id="player-monster-zone-5"></div>
+  </div>
+  <div class="player-spell-zones">
+    <div class="player-spell-zone" id="player-spell-zone-1"></div>
+    <div class="player-spell-zone" id="player-spell-zone-2"></div>
+    <div class="player-spell-zone" id="player-spell-zone-3"></div>
+  </div>
+  <div class="player-hand-container">
+    <div class="player-hand zone"></div>
+    <div class="player-deck" id="player-deck">Deck: 30</div>
+    <div class="player-crypt" id="player-crypt">Crypt: 0</div>
+  </div>
+  <div class="status">
+    <span id="player-life">Player Life: 20</span>
+    <div id="player-mana-crystals" class="mana-crystals"></div>
+    <span id="player-mana" style="display:none;">Player Mana: 1</span>
+  </div>
+  <div>
+    <button onclick="playerDraw()" id="draw-button">Draw</button>
+    <button onclick="useFavor()" id="favor-button">Favor</button>
+    <button onclick="startAttackPhase()" id="attack-button">Attack</button>
+    <button onclick="endTurn()">End Turn</button>
+    <button onclick="attackLifePoints()" id="attack-life-button" style="display: none;">Attack Life</button>
+  </div>
+  <!-- POPUPS -->
+  <div id="deck-selection-popup">
+    <div>Choose Your Starting Deck</div>
+    <button class="deck-button-blue">Blue</button>
+    <button class="deck-button-red">Red</button>
+  </div>
+  <div id="game-over-popup">
+    <div id="game-over-text"></div>
+    <button onclick="resetGame(); document.getElementById('game-over-popup').style.display='none';">Retry</button>
+  </div>
+  <div id="player-crypt-popup">
+    <div>Player's Crypt</div>
+    <div id="player-crypt-content"></div>
+    <button class="close-crypt" onclick="closeCryptPopup()">X</button>
+  </div>
+  <div id="opponent-crypt-popup">
+    <div>Opponent's Crypt</div>
+    <div id="opponent-crypt-content"></div>
+    <button class="close-crypt" onclick="closeCryptPopup()">X</button>
+  </div>
+  <div id="notification"></div>
+  <div id="tooltip" class="card-tooltip"></div>
+  <!-- AUDIO -->
+  <audio id="draw-sound" src="https://cdn.jsdelivr.net/gh/freesound/freesound-api@master/sounds/472926__srinivasan__card-shuffle.mp3"></audio>
+  <audio id="play-sound" src="https://cdn.jsdelivr.net/gh/freesound/freesound-api@master/sounds/472925__srinivasan__card-place.mp3"></audio>
+  <audio id="attack-sound" src="https://cdn.jsdelivr.net/gh/freesound/freesound-api@master/sounds/416179__jorgeolvera__sword-hit.mp3"></audio>
+  <audio id="spell-sound" src="https://cdn.jsdelivr.net/gh/freesound/freesound-api@master/sounds/346689__natef006__magic.mp3"></audio>
+  <audio id="turn-sound" src="https://cdn.jsdelivr.net/gh/freesound/freesound-api@master/sounds/387233__daronious__chime.mp3"></audio>
+</div>
+
+<script>
+// ────────────────────────────────────────────────────────────────────────
+// FULL GAME LOGIC – FIXED: DECK SELECTION + NO REDECLARATION + ART
+// ────────────────────────────────────────────────────────────────────────
+let playerLife = 20, opponentLife = 20;
+let playerMana = 1, opponentMana = 1;
+let turn = "player", attackPhase = false;
+let hasDrawn = false, hasUsedFavor = false;
+let selectedCard = null;
+let playerDeck = [], opponentDeck = [], playerHand = [], opponentHand = [];
+let playerPlayedCards = [], opponentPlayedCards = [], playerSpellField = [], opponentSpellField = [];
+let playerCrypt = [], opponentCrypt = [];
+let isOpponentTurnProcessing = false;
+let playerDeckColor = null, opponentDeckColor = null;
+let turnCount = 1;
+const maxHandSize = 7;
+const tooltip = document.getElementById('tooltip');
+let selectedHandCard = null;
+
+// ── CARD TEMPLATES WITH ART ──
+const blueCardTemplates = [
+  { name: "Holy Lamb", type: "creature", atk: 1, def: 1, mana: 0, art: "holy-lamb.png" },
+  { name: "Holy Lamb", type: "creature", atk: 1, def: 1, mana: 0, art: "holy-lamb.png" },
+  { name: "Holy Lamb", type: "creature", atk: 1, def: 1, mana: 0, art: "holy-lamb.png" },
+  { name: "Holy Lamb", type: "creature", atk: 1, def: 1, mana: 0, art: "holy-lamb.png" },
+  { name: "Oracle of Light", type: "creature", atk: 2, def: 2, mana: 1, art: "oracle-light.png" },
+  { name: "Oracle of Light", type: "creature", atk: 2, def: 2, mana: 1, art: "oracle-light.png" },
+  { name: "Priestess of Dawn", type: "creature", atk: 1, def: 3, mana: 1, art: "priestess-dawn.png" },
+  { name: "Priestess of Dawn", type: "creature", atk: 1, def: 3, mana: 1, art: "priestess-dawn.png" },
+  { name: "Sacred Maiden", type: "creature", atk: 1, def: 2, mana: 1, art: "sacred-maiden.png" },
+  { name: "Sacred Maiden", type: "creature", atk: 1, def: 2, mana: 1, art: "sacred-maiden.png" },
+  { name: "Great Prophet", type: "creature", atk: 5, def: 4, mana: 2, art: "great-prophet.png" },
+  { name: "Great Prophet", type: "creature", atk: 5, def: 4, mana: 2, art: "great-prophet.png" },
+  { name: "Prize Fighter", type: "creature", atk: 4, def: 4, mana: 2, art: "prize-fighter.png" },
+  { name: "Prize Fighter", type: "creature", atk: 4, def: 4, mana: 2, art: "prize-fighter.png" },
+  { name: "Royal Paladin", type: "creature", atk: 4, def: 2, mana: 2, art: "royal-paladin.png" },
+  { name: "Royal Paladin", type: "creature", atk: 4, def: 2, mana: 2, art: "royal-paladin.png" },
+  { name: "Templar Guardian", type: "creature", atk: 3, def: 5, mana: 2, art: "templar-guardian.png" },
+  { name: "Templar Guardian", type: "creature", atk: 3, def: 5, mana: 2, art: "templar-guardian.png" },
+  { name: "Holy King", type: "creature", atk: 6, def: 6, mana: 3, art: "holy-king.png" },
+  { name: "Holy King", type: "creature", atk: 6, def: 6, mana: 3, art: "holy-king.png" },
+  { name: "Draw", type: "spell", effect: "Draw 2 cards", mana: 0, art: "draw-spell.png" },
+  { name: "Draw", type: "spell", effect: "Draw 2 cards", mana: 0, art: "draw-spell.png" },
+  { name: "Royal Decree", type: "spell", effect: "Deal 2 damage", mana: 0, art: "royal-decree.png" },
+  { name: "Royal Decree", type: "spell", effect: "Deal 2 damage", mana: 0, art: "royal-decree.png" },
+  { name: "Divine Blessing", type: "spell", effect: "Restore 3 life", mana: 1, art: "divine-blessing.png" },
+  { name: "Divine Blessing", type: "spell", effect: "Restore 3 life", mana: 1, art: "divine-blessing.png" },
+  { name: "Light of Salvation", type: "spell", effect: "Deal 3 damage", mana: 1, art: "light-salvation.png" },
+  { name: "Light of Salvation", type: "spell", effect: "Deal 3 damage", mana: 1, art: "light-salvation.png" },
+  { name: "Resurrection", type: "spell", effect: "Revive a monster from the Crypt", mana: 2, art: "resurrection.png" },
+  { name: "Resurrection", type: "spell", effect: "Revive a monster from the Crypt", mana: 2, art: "resurrection.png" }
+];
+const redCardTemplates = [
+  { name: "Flame Kobold", type: "creature", atk: 1, def: 1, mana: 0, art: "flame-kobold.png" },
+  { name: "Flame Kobold", type: "creature", atk: 1, def: 1, mana: 0, art: "flame-kobold.png" },
+  { name: "Flame Kobold", type: "creature", atk: 1, def: 1, mana: 0, art: "flame-kobold.png" },
+  { name: "Flame Kobold", type: "creature", atk: 1, def: 1, mana: 0, art: "flame-kobold.png" },
+  { name: "Red Wyvern", type: "creature", atk: 1, def: 3, mana: 1, art: "red-wyvern.png" },
+  { name: "Red Wyvern", type: "creature", atk: 1, def: 3, mana: 1, art: "red-wyvern.png" },
+  { name: "Rogue Outlaw", type: "creature", atk: 2, def: 2, mana: 1, art: "rogue-outlaw.png" },
+  { name: "Rogue Outlaw", type: "creature", atk: 2, def: 2, mana: 1, art: "rogue-outlaw.png" },
+  { name: "Shadow Bandit", type: "creature", atk: 3, def: 1, mana: 1, art: "shadow-bandit.png" },
+  { name: "Shadow Bandit", type: "creature", atk: 3, def: 1, mana: 1, art: "shadow-bandit.png" },
+  { name: "Berserker Chieftain", type: "creature", atk: 3, def: 3, mana: 2, art: "berserker.png" },
+  { name: "Berserker Chieftain", type: "creature", atk: 3, def: 3, mana: 2, art: "berserker.png" },
+  { name: "Crimson Wyrm", type: "creature", atk: 4, def: 2, mana: 2, art: "crimson-wyrm.png" },
+  { name: "Crimson Wyrm", type: "creature", atk: 4, def: 2, mana: 2, art: "crimson-wyrm.png" },
+  { name: "Dragon Knight", type: "creature", atk: 5, def: 3, mana: 2, art: "dragon-knight.png" },
+  { name: "Dragon Knight", type: "creature", atk: 5, def: 3, mana: 2, art: "dragon-knight.png" },
+  { name: "Flame Marauder", type: "creature", atk: 4, def: 3, mana: 2, art: "flame-marauder.png" },
+  { name: "Flame Marauder", type: "creature", atk: 4, def: 3, mana: 2, art: "flame-marauder.png" },
+  { name: "Draco Emperor", type: "creature", atk: 6, def: 6, mana: 3, art: "draco-emperor.png" },
+  { name: "Draco Emperor", type: "creature", atk: 6, def: 6, mana: 3, art: "draco-emperor.png" },
+  { name: "Ambush Strike", type: "spell", effect: "Deal 2 damage", mana: 0, art: "ambush-strike.png" },
+  { name: "Ambush Strike", type: "spell", effect: "Deal 2 damage", mana: 0, art: "ambush-strike.png" },
+  { name: "Draw", type: "spell", effect: "Draw 2 cards", mana: 0, art: "draw-spell.png" },
+  { name: "Draw", type: "spell", effect: "Draw 2 cards", mana: 0, art: "draw-spell.png" },
+  { name: "Dragon's Breath", type: "spell", effect: "Deal 3 damage", mana: 1, art: "dragons-breath.png" },
+  { name: "Dragon's Breath", type: "spell", effect: "Deal 3 damage", mana: 1, art: "dragons-breath.png" },
+  { name: "Fiery Surge", type: "spell", effect: "Restore 3 life", mana: 1, art: "fiery-surge.png" },
+  { name: "Fiery Surge", type: "spell", effect: "Restore 3 life", mana: 1, art: "fiery-surge.png" },
+  { name: "Resurrection", type: "spell", effect: "Revive a monster from the Crypt", mana: 2, art: "resurrection.png" },
+  { name: "Resurrection", type: "spell", effect: "Revive a monster from the Crypt", mana: 2, art: "resurrection.png" }
+];
+
+// ── HELPERS ──
+function playSound(id) { const s = document.getElementById(id); if (s) { s.currentTime = 0; s.play().catch(() => {}); } }
+function showNotification(msg) { const n = document.getElementById('notification'); n.innerText = msg; n.classList.add('show'); setTimeout(() => n.classList.remove('show'), 3000); }
+function addTooltipListeners(div, card) {
+  div.onmouseenter = () => {
+    tooltip.innerHTML = `<h3>${card.name}</h3><div>Type: ${card.type} | Mana: ${card.mana}</div>${card.atk ? `<div>ATK: ${card.atk} | DEF: ${card.def}</div>` : ''}${card.effect ? `<div class="effect">${card.effect}</div>` : ''}`;
+    tooltip.style.left = (event.pageX + 15) + 'px'; tooltip.style.top = (event.pageY - 10) + 'px'; tooltip.classList.add('show');
+  };
+  div.onmouseleave = () => tooltip.classList.remove('show');
+  div.onmousemove = e => { tooltip.style.left = (e.pageX + 15) + 'px'; tooltip.style.top = (e.pageY - 10) + 'px'; };
+}
+function updateHandPlayability() {
+  document.querySelectorAll(".player-hand .card").forEach(div => {
+    const c = playerHand.find(x => x.id === div.dataset.id);
+    if (c && c.mana <= playerMana) { div.classList.add("playable"); div.classList.remove("unplayable"); }
+    else { div.classList.add("unplayable"); div.classList.remove("playable"); }
+  });
+}
+function updateTurnDisplay() {
+  document.getElementById("turn-indicator").innerText = turn === "player" ? "Player's Turn" : "Opponent's Turn";
+  document.getElementById("turn-counter").innerText = `Turn ${turnCount}`;
+}
+
+// ── MANA CRYSTALS ──
+function renderManaCrystals(id, mana, max = 10, color = null) {
+  const c = document.getElementById(id); c.innerHTML = '';
+  for (let i = 0; i < max; i++) {
+    const crystal = document.createElement('div');
+    crystal.className = 'mana-crystal';
+    if (i < mana) { crystal.classList.add('filled'); if (color) crystal.classList.add(color); }
+    c.appendChild(crystal);
+  }
+}
+function updateManaDisplays() {
+  renderManaCrystals('player-mana-crystals', playerMana, 10, playerDeckColor?.toLowerCase());
+  renderManaCrystals('opponent-mana-crystals', opponentMana, 10, opponentDeckColor?.toLowerCase());
+  document.getElementById('player-mana').innerText = `Player Mana: ${playerMana}`;
+  document.getElementById('opponent-mana').innerText = `Opponent Mana: ${opponentMana}`;
+}
+
+// ── DECK SELECTION POPUP (MISSING FUNCTION) ──
+function showDeckSelectionPopup() {
+  const popup = document.getElementById("deck-selection-popup");
+  popup.style.display = "block";
+  document.querySelector(".deck-button-blue").onclick = () => selectDeck('Blue');
+  document.querySelector(".deck-button-red").onclick = () => selectDeck('Red');
+  showNotification("Choose your deck!");
+}
+
+// ── CLICK-TO-PLAY (SELECT + TARGET) ──
+function trySelectCardFromHand(div) {
+  if (turn !== "player" || attackPhase) return;
+  if (selectedHandCard) { selectedHandCard.classList.remove('selected'); selectedHandCard = null; }
+  const id = div.dataset.id;
+  const card = playerHand.find(c => c.id === id);
+  if (!card || card.mana > playerMana) { showNotification("Not enough mana!"); return; }
+  selectedHandCard = div;
+  div.classList.add('selected');
+  showNotification(`Selected: ${card.name} - Click a zone to play`);
+  highlightAvailableZones(card.type);
+}
+function highlightAvailableZones(cardType) {
+  document.querySelectorAll('.player-monster-zone, .player-spell-zone').forEach(z => {
+    z.classList.remove('playable-zone'); z.onclick = null;
+  });
+  if (cardType === "creature") {
+    for (let i = 1; i <= 5; i++) {
+      const zone = document.getElementById(`player-monster-zone-${i}`);
+      if (!playerPlayedCards.some(p => p.zone === zone.id)) {
+        zone.classList.add('playable-zone');
+        zone.onclick = () => playCardToZone(selectedHandCard, zone.id);
+      }
+    }
+  } else if (cardType === "spell") {
+    for (let i = 1; i <= 3; i++) {
+      const zone = document.getElementById(`player-spell-zone-${i}`);
+      if (!playerSpellField.some(p => p.zone === zone.id)) {
+        zone.classList.add('playable-zone');
+        zone.onclick = () => playCardToZone(selectedHandCard, zone.id);
+      }
+    }
+  }
+}
+function playCardToZone(cardDiv, targetZoneId) {
+  if (!selectedHandCard) return;
+  const id = cardDiv.dataset.id;
+  const card = playerHand.find(c => c.id === id);
+  if (!card) return;
+  document.querySelectorAll('.player-monster-zone, .player-spell-zone').forEach(z => {
+    z.classList.remove('playable-zone'); z.onclick = null;
+  });
+  selectedHandCard.classList.remove('selected');
+  selectedHandCard = null;
+  if (card.type === "creature") {
+    if (playerMana < card.mana || playerPlayedCards.some(p => p.zone === targetZoneId)) return;
+    playerMana -= card.mana; updateManaDisplays();
+    playerHand = playerHand.filter(c => c.id !== id); cardDiv.remove();
+    card.hasAttacked = false; playerPlayedCards.push({ card, zone: targetZoneId });
+    updatePlayerZone(); updateOpponentZone(); updateHandPlayability(); makeHandDraggable(); attachHandClickListeners();
+    const newC = document.getElementById(targetZoneId).querySelector('.card');
+    if (newC) { newC.classList.add('summon-glow'); addDeckAnimation(newC, playerDeckColor, 'summon'); setTimeout(() => newC.classList.remove('summon-glow'), 1200); }
+    playSound('play-sound'); checkGameOver();
+  } else if (card.type === "spell") {
+    if (playerMana < card.mana || playerSpellField.some(p => p.zone === targetZoneId)) return;
+    playerMana -= card.mana; updateManaDisplays();
+    playerHand = playerHand.filter(c => c.id !== id); cardDiv.remove();
+    playerSpellField.push({ card, zone: targetZoneId });
+    updatePlayerSpellZone(); updateHandPlayability(); makeHandDraggable(); attachHandClickListeners();
+    const spellC = document.querySelector(`#${targetZoneId} .card`);
+    if (spellC) {
+      spellC.classList.add('spell-glow', `${playerDeckColor.toLowerCase()}-spell-glow`);
+      addDeckAnimation(spellC, playerDeckColor, 'spell'); playSound('spell-sound');
+      setTimeout(() => {
+        playerSpellField = playerSpellField.filter(e => e.card.id !== card.id);
+        playerCrypt.push(card); updatePlayerCrypt(); updatePlayerSpellZone(); updatePlayerZone(); updateOpponentZone();
+        spellC.classList.remove('spell-glow', `${playerDeckColor.toLowerCase()}-spell-glow`);
+        if (card.effect === "Restore 3 life") { playerLife += 3; document.getElementById('player-life').innerText = `Player Life: ${playerLife}`; }
+        else if (card.effect.includes("damage")) { const dmg = card.effect.includes("3") ? 3 : 2; opponentLife -= dmg; document.getElementById('opponent-life').innerText = `Opponent Life: ${opponentLife}`; }
+        else if (card.effect === "Draw 2 cards") { for (let j = 0; j < 2 && playerHand.length < maxHandSize && playerDeck.length > 0; j++) drawCard(playerDeck, playerHand, ".player-hand"); }
+        else if (card.effect === "Revive a monster from the Crypt") {
+          const rev = playerCrypt.find(c => c.type === "creature");
+          if (rev) {
+            let empty = null;
+            for (let k = 1; k <= 5; k++) if (!playerPlayedCards.find(p => p.zone === `player-monster-zone-${k}`)) { empty = `player-monster-zone-${k}`; break; }
+            if (empty) { playerCrypt = playerCrypt.filter(c => c.id !== rev.id); rev.hasAttacked = false; playerPlayedCards.push({ card: rev, zone: empty }); updatePlayerCrypt(); updatePlayerZone(); updateOpponentZone(); }
+          }
+        }
+        checkGameOver();
+      }, 800);
+    }
+  }
+}
+function attachHandClickListeners() {
+  document.querySelectorAll(".player-hand .card").forEach(div => {
+    if (!div.dataset.clickListener) {
+      div.dataset.clickListener = "true";
+      div.style.cursor = "pointer";
+      div.title = "Click to select";
+      div.addEventListener("click", () => trySelectCardFromHand(div));
+    }
+  });
+}
+
+// ── DRAG SUPPORT ──
+function makeHandDraggable() {
+  document.querySelectorAll(".player-hand .card").forEach(div => {
+    if (!div.dataset.dragListener) {
+      div.draggable = true;
+      div.dataset.dragListener = "true";
+      div.addEventListener("dragstart", e => { if (turn === "player" && !attackPhase) e.dataTransfer.setData("text", div.dataset.id); });
+    }
+  });
+  attachHandClickListeners();
+}
+
+// ── DECK & UI ──
+function selectDeck(color) {
+  playerDeckColor = color;
+  opponentDeckColor = color === "Blue" ? "Red" : "Blue";
+  document.getElementById("player-deck").className = `player-deck ${color.toLowerCase()}-deck`;
+  document.getElementById("opponent-deck").className = `opponent-deck ${opponentDeckColor.toLowerCase()}-deck`;
+  document.getElementById("deck-selection-popup").style.display = "none";
+  setupBoard();
+}
+function createDeck(isBlue) {
+  const t = isBlue ? blueCardTemplates : redCardTemplates;
+  let d = t.map((c, i) => ({ ...c, id: `${c.name}-${i}-${Date.now()}`, hasAttacked: c.type === "creature" ? false : undefined }));
+  for (let i = d.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [d[i], d[j]] = [d[j], d[i]]; }
+  return d;
+}
+function drawCard(deck, hand, zoneCls) {
+  if (deck.length === 0 || hand.length >= maxHandSize) return;
+  const card = deck.splice(Math.floor(Math.random() * deck.length), 1)[0];
+  hand.push(card);
+  const zone = document.querySelector(zoneCls);
+  const div = document.createElement("div");
+  div.className = zoneCls.includes("opponent") ? "card opponent-hand" : "card";
+  div.draggable = !zoneCls.includes("opponent");
+  div.dataset.id = card.id;
+
+  const isOpponentHand = zoneCls.includes("opponent");
+  if (card.art) {
+    const img = new Image();
+    img.onload = () => {
+      div.style.backgroundImage = `url('images/${card.art}')`;
+      if (isOpponentHand) div.style.filter = "brightness(0.3)";
+    };
+    img.onerror = () => div.classList.add('no-art');
+    img.src = `images/${card.art}`;
+  } else {
+    div.classList.add('no-art');
+  }
+
+  div.innerHTML = `
+    <div class="card-name">${isOpponentHand ? "??" : card.name}</div>
+    ${!isOpponentHand ? `<div class="card-stats">
+      ${card.atk ? `ATK: ${card.atk} DEF: ${card.def}` : ''}<br>Mana: ${card.mana}
+    </div>` : ''}
+  `;
+
+  if (!isOpponentHand) addTooltipListeners(div, card);
+  zone.appendChild(div);
+  playSound("draw-sound");
+  if (zoneCls === ".player-hand") { 
+    updatePlayerDeck(); updateHandPlayability(); makeHandDraggable(); attachHandClickListeners(); 
+  } else updateOpponentDeck();
+}
+function updatePlayerDeck() { document.querySelector(".player-deck").innerText = `${playerDeckColor}: ${playerDeck.length}`; }
+function updateOpponentDeck() { document.querySelector(".opponent-deck").innerText = `${opponentDeckColor}: ${opponentDeck.length}`; }
+function updatePlayerCrypt() { document.querySelector(".player-crypt").innerText = `Crypt: ${playerCrypt.length}`; }
+function updateOpponentCrypt() { document.querySelector(".opponent-crypt").innerText = `Crypt: ${opponentCrypt.length}`; }
+
+// ── BOARD SETUP ──
+function setupBoard() {
+  playerDeck = createDeck(playerDeckColor === "Blue");
+  opponentDeck = createDeck(opponentDeckColor === "Blue");
+  playerHand = []; opponentHand = [];
+  for (let i = 0; i < 4; i++) { drawCard(playerDeck, playerHand, ".player-hand"); drawCard(opponentDeck, opponentHand, ".opponent-hand"); }
+  turn = Math.random() < 0.5 ? "player" : "opponent";
+  turnCount = 1; updateTurnDisplay();
+  document.getElementById("draw-button").disabled = turn !== "player";
+  updateManaDisplays();
+  if (turn === "opponent") opponentTurn();
+}
+
+// ── ZONE UPDATE FUNCTIONS (WITH ART) ──
+function updatePlayerZone() {
+  for (let i = 1; i <= 5; i++) {
+    const zone = document.getElementById(`player-monster-zone-${i}`);
+    zone.innerHTML = "";
+    const entry = playerPlayedCards.find(e => e.zone === zone.id);
+    if (entry) {
+      const cardDiv = document.createElement("div");
+      cardDiv.className = `card played ${entry.card.hasAttacked ? 'has-attacked' : ''}`;
+      cardDiv.dataset.id = entry.card.id;
+      if (entry.card.art) {
+        const img = new Image();
+        img.onload = () => cardDiv.style.backgroundImage = `url('images/${entry.card.art}')`;
+        img.onerror = () => cardDiv.classList.add('no-art');
+        img.src = `images/${entry.card.art}`;
+      } else {
+        cardDiv.classList.add('no-art');
+      }
+      cardDiv.innerHTML = `
+        <div class="card-name">${entry.card.name}</div>
+        <div class="card-stats">ATK: ${entry.card.atk} DEF: ${entry.card.def}<br>Mana: ${entry.card.mana}</div>
+      `;
+      addTooltipListeners(cardDiv, entry.card);
+      if (attackPhase && !entry.card.hasAttacked) {
+        cardDiv.classList.add('attackable');
+        cardDiv.style.cursor = "pointer";
+        cardDiv.onclick = selectPlayerCard;
+      } else {
+        cardDiv.classList.remove('attackable');
+        cardDiv.style.cursor = "default";
+        cardDiv.onclick = null;
+      }
+      zone.appendChild(cardDiv);
+    }
+  }
+}
+function updateOpponentZone() {
+  for (let i = 1; i <= 5; i++) {
+    const zone = document.getElementById(`opponent-monster-zone-${i}`);
+    zone.innerHTML = "";
+    const entry = opponentPlayedCards.find(e => e.zone === `opponent-monster-zone-${i}`);
+    if (entry) {
+      const cardDiv = document.createElement("div");
+      cardDiv.className = `card opponent played ${entry.card.hasAttacked ? 'has-attacked' : ''}`;
+      cardDiv.dataset.id = entry.card.id;
+      if (entry.card.art) {
+        const img = new Image();
+        img.onload = () => cardDiv.style.backgroundImage = `url('images/${entry.card.art}')`;
+        img.onerror = () => cardDiv.classList.add('no-art');
+        img.src = `images/${entry.card.art}`;
+      } else {
+        cardDiv.classList.add('no-art');
+      }
+      cardDiv.innerHTML = `
+        <div class="card-name">${entry.card.name}</div>
+        <div class="card-stats">ATK: ${entry.card.atk} DEF: ${entry.card.def}<br>Mana: ${entry.card.mana}</div>
+      `;
+      addTooltipListeners(cardDiv, entry.card);
+      if (attackPhase && selectedCard && !selectedCard.hasAttacked) {
+        cardDiv.classList.add('attack-target');
+        cardDiv.style.cursor = "crosshair";
+        cardDiv.onclick = handlePlayerAttack;
+      } else {
+        cardDiv.classList.remove('attack-target');
+        cardDiv.style.cursor = "default";
+        cardDiv.onclick = null;
+      }
+      zone.appendChild(cardDiv);
+    }
+  }
+}
+function updatePlayerSpellZone() {
+  for (let i = 1; i <= 3; i++) {
+    const zone = document.getElementById(`player-spell-zone-${i}`);
+    zone.innerHTML = "";
+    const entry = playerSpellField.find(e => e.zone === zone.id);
+    if (entry) {
+      const cardDiv = document.createElement("div");
+      cardDiv.className = "card spell";
+      cardDiv.dataset.id = entry.card.id;
+      if (entry.card.art) {
+        const img = new Image();
+        img.onload = () => cardDiv.style.backgroundImage = `url('images/${entry.card.art}')`;
+        img.onerror = () => cardDiv.classList.add('no-art');
+        img.src = `images/${entry.card.art}`;
+      } else {
+        cardDiv.classList.add('no-art');
+      }
+      cardDiv.innerHTML = `<div class="card-name">${entry.card.name}</div>`;
+      addTooltipListeners(cardDiv, entry.card);
+      zone.appendChild(cardDiv);
+    }
+  }
+}
+function updateOpponentSpellZone() {
+  for (let i = 1; i <= 3; i++) {
+    const zone = document.getElementById(`opponent-spell-zone-${i}`);
+    zone.innerHTML = "";
+    const entry = opponentSpellField.find(e => e.zone === `opponent-spell-zone-${i}`);
+    if (entry) {
+      const cardDiv = document.createElement("div");
+      cardDiv.className = "card opponent spell";
+      cardDiv.dataset.id = entry.card.id;
+      if (entry.card.art) {
+        const img = new Image();
+        img.onload = () => cardDiv.style.backgroundImage = `url('images/${entry.card.art}')`;
+        img.onerror = () => cardDiv.classList.add('no-art');
+        img.src = `images/${entry.card.art}`;
+      } else {
+        cardDiv.classList.add('no-art');
+      }
+      cardDiv.innerHTML = `<div class="card-name">${entry.card.name}</div>`;
+      addTooltipListeners(cardDiv, entry.card);
+      zone.appendChild(cardDiv);
+    }
+  }
+}
+function addDeckAnimation(el, color, type) {
+  if (!el || !color) return;
+  el.style.boxShadow = type === 'summon' ? '0 0 20px #00ff00' : '0 0 20px #87ceeb';
+  setTimeout(() => { if (el) el.style.boxShadow = ''; }, type === 'summon' ? 1200 : 800);
+}
+
+// ── DRAG & DROP ZONES ──
+for (let i = 1; i <= 5; i++) {
+  const zone = document.getElementById(`player-monster-zone-${i}`);
+  zone.addEventListener("dragover", e => e.preventDefault());
+  zone.addEventListener("drop", e => {
+    e.preventDefault(); if (turn !== "player" || attackPhase) return;
+    const id = e.dataTransfer.getData("text");
+    const card = playerHand.find(c => c.id === id);
+    if (!card || card.type !== "creature" || playerMana < card.mana || playerPlayedCards.some(p => p.zone === zone.id)) return;
+    if (selectedHandCard) { selectedHandCard.classList.remove('selected'); selectedHandCard = null; document.querySelectorAll('.player-monster-zone, .player-spell-zone').forEach(z => { z.classList.remove('playable-zone'); z.onclick = null; }); }
+    playerMana -= card.mana; updateManaDisplays();
+    playerHand = playerHand.filter(c => c.id !== id);
+    document.querySelector(`.player-hand .card[data-id="${id}"]`)?.remove();
+    card.hasAttacked = false; playerPlayedCards.push({ card, zone: zone.id });
+    updatePlayerZone(); updateOpponentZone(); updateHandPlayability(); makeHandDraggable(); attachHandClickListeners();
+    const newC = zone.querySelector(".card"); if (newC) { newC.classList.add('summon-glow'); addDeckAnimation(newC, playerDeckColor, 'summon'); setTimeout(() => newC.classList.remove('summon-glow'), 1200); }
+    playSound('play-sound'); checkGameOver();
+  });
+}
+for (let i = 1; i <= 3; i++) {
+  const zone = document.getElementById(`player-spell-zone-${i}`);
+  zone.addEventListener("dragover", e => e.preventDefault());
+  zone.addEventListener("drop", e => {
+    e.preventDefault(); if (turn !== "player" || attackPhase) return;
+    const id = e.dataTransfer.getData("text");
+    const card = playerHand.find(c => c.id === id);
+    if (!card || card.type !== "spell" || playerMana < card.mana || playerSpellField.some(p => p.zone === zone.id)) return;
+    if (selectedHandCard) { selectedHandCard.classList.remove('selected'); selectedHandCard = null; document.querySelectorAll('.player-monster-zone, .player-spell-zone').forEach(z => { z.classList.remove('playable-zone'); z.onclick = null; }); }
+    playerMana -= card.mana; updateManaDisplays();
+    playerHand = playerHand.filter(c => c.id !== id);
+    document.querySelector(`.player-hand .card[data-id="${id}"]`)?.remove();
+    playerSpellField.push({ card, zone: zone.id });
+    updatePlayerSpellZone(); updateHandPlayability(); makeHandDraggable(); attachHandClickListeners();
+    const spellC = zone.querySelector('.card');
+    if (spellC) {
+      spellC.classList.add('spell-glow', `${playerDeckColor.toLowerCase()}-spell-glow`);
+      addDeckAnimation(spellC, playerDeckColor, 'spell'); playSound('spell-sound');
+      setTimeout(() => {
+        playerSpellField = playerSpellField.filter(e => e.card.id !== card.id);
+        playerCrypt.push(card); updatePlayerCrypt(); updatePlayerSpellZone(); updatePlayerZone(); updateOpponentZone();
+        spellC.classList.remove('spell-glow', `${playerDeckColor.toLowerCase()}-spell-glow`);
+        if (card.effect === "Restore 3 life") { playerLife += 3; document.getElementById('player-life').innerText = `Player Life: ${playerLife}`; }
+        else if (card.effect.includes("damage")) { const dmg = card.effect.includes("3") ? 3 : 2; opponentLife -= dmg; document.getElementById('opponent-life').innerText = `Opponent Life: ${opponentLife}`; }
+        else if (card.effect === "Draw 2 cards") { for (let j = 0; j < 2 && playerHand.length < maxHandSize && playerDeck.length > 0; j++) drawCard(playerDeck, playerHand, ".player-hand"); }
+        else if (card.effect === "Revive a monster from the Crypt") {
+          const rev = playerCrypt.find(c => c.type === "creature");
+          if (rev) {
+            let empty = null;
+            for (let k = 1; k <= 5; k++) if (!playerPlayedCards.find(p => p.zone === `player-monster-zone-${k}`)) { empty = `player-monster-zone-${k}`; break; }
+            if (empty) { playerCrypt = playerCrypt.filter(c => c.id !== rev.id); rev.hasAttacked = false; playerPlayedCards.push({ card: rev, zone: empty }); updatePlayerCrypt(); updatePlayerZone(); updateOpponentZone(); }
+          }
+        }
+        checkGameOver();
+      }, 800);
+    }
+  });
+}
+
+// ── FAVOR, ATTACK, END TURN ──
+function useFavor() {
+  if (turn !== "player" || hasUsedFavor || attackPhase) return;
+  playerMana += 1; playerLife -= 1; updateManaDisplays();
+  document.getElementById("player-life").innerText = `Player Life: ${playerLife}`;
+  hasUsedFavor = true; document.getElementById("favor-button").disabled = true; document.getElementById("favor-button").innerText = "Favor (Used)";
+  playSound("spell-sound"); showNotification("You sacrificed life for mana!");
+  checkGameOver();
+}
+function startAttackPhase() {
+  if (turn !== "player" || attackPhase) return;
+  attackPhase = true;
+  document.getElementById("attack-button").disabled = true;
+  document.getElementById("attack-life-button").style.display = opponentPlayedCards.length === 0 ? "inline" : "none";
+  updatePlayerZone(); updateOpponentZone();
+  showNotification("Attack phase! Click your monster, then opponent's monster or life.");
+}
+function selectPlayerCard(e) {
+  const cardId = e.target.dataset.id;
+  const entry = playerPlayedCards.find(e => e.card.id === cardId);
+  if (!entry || entry.card.hasAttacked) return;
+  if (selectedCard) document.querySelector(`.card[data-id="${selectedCard.id}"]`)?.classList.remove("selected");
+  selectedCard = entry.card;
+  e.target.classList.add("selected");
+  updateOpponentZone();
+}
+function handlePlayerAttack(e) {
+  if (!selectedCard || selectedCard.hasAttacked) return;
+  const targetId = e.target.dataset.id;
+  const target = opponentPlayedCards.find(e => e.card.id === targetId);
+  if (!target) return;
+  const attacker = document.querySelector(`.card[data-id="${selectedCard.id}"]`);
+  attacker.classList.add('attacking');
+  addDeckAnimation(attacker, playerDeckColor, 'attack');
+  playSound("attack-sound");
+  setTimeout(() => {
+    attacker.classList.remove('attacking');
+    attacker.classList.add('has-attacked');
+  }, 900);
+  if (selectedCard.atk >= target.card.def) {
+    opponentPlayedCards = opponentPlayedCards.filter(e => e.card.id !== targetId);
+    opponentCrypt.push(target.card);
+    updateOpponentCrypt();
+  }
+  selectedCard.hasAttacked = true;
+  selectedCard = null;
+  document.getElementById("attack-life-button").style.display = opponentPlayedCards.length === 0 ? "inline" : "none";
+  updatePlayerZone();
+  updateOpponentZone();
+  checkGameOver();
+}
+function attackLifePoints() {
+  if (!selectedCard || selectedCard.hasAttacked) return;
+  const damage = selectedCard.atk;
+  opponentLife -= damage;
+  opponentMana += damage;
+  document.getElementById("opponent-life").innerText = `Opponent Life: ${opponentLife}`;
+  updateManaDisplays();
+  selectedCard.hasAttacked = true;
+  document.querySelector(`.card[data-id="${selectedCard.id}"]`).classList.add('has-attacked');
+  selectedCard = null;
+  updatePlayerZone();
+  checkGameOver();
+}
+function endTurn() {
+  if (attackPhase) {
+    attackPhase = false;
+    document.getElementById("attack-button").disabled = false;
+    document.getElementById("attack-life-button").style.display = "none";
+    selectedCard = null;
+  }
+  playerPlayedCards.forEach(e => { if (e.card.type === "creature") e.card.hasAttacked = false; });
+  opponentPlayedCards.forEach(e => { if (e.card.type === "creature") e.card.hasAttacked = false; });
+  turn = turn === "player" ? "opponent" : "player";
+  turnCount++;
+  if (turn === "player") playerMana = Math.min(playerMana + 1, 10);
+  else opponentMana = Math.min(opponentMana + 1, 10);
+  updateManaDisplays();
+  playSound("turn-sound");
+  if (turn === "player") {
+    hasDrawn = false; hasUsedFavor = false;
+    document.getElementById("draw-button").disabled = false;
+    document.getElementById("favor-button").disabled = false; document.getElementById("favor-button").innerText = "Favor";
+    document.getElementById("attack-button").disabled = false;
+    updateTurnDisplay(); updatePlayerZone(); updateOpponentZone(); updatePlayerSpellZone(); updateOpponentSpellZone();
+    updateHandPlayability(); makeHandDraggable(); attachHandClickListeners();
+  } else opponentTurn();
+}
+function playerDraw() {
+  if (turn !== "player" || hasDrawn || attackPhase || playerHand.length >= maxHandSize) return;
+  drawCard(playerDeck, playerHand, ".player-hand"); hasDrawn = true; document.getElementById("draw-button").disabled = true;
+}
+function checkGameOver() {
+  if (playerLife <= 0) { document.getElementById("game-over-text").innerText = "You Lose!"; document.getElementById("game-over-popup").style.display = "block"; }
+  else if (opponentLife <= 0) { document.getElementById("game-over-text").innerText = "You Win!"; document.getElementById("game-over-popup").style.display = "block"; }
+}
+function resetGame() {
+  location.reload();
+}
+function closeCryptPopup() {
+  document.getElementById('player-crypt-popup').style.display = 'none';
+  document.getElementById('opponent-crypt-popup').style.display = 'none';
+}
+
+// ── AI (SIMPLE) ──
+function opponentTurn() {
+  if (isOpponentTurnProcessing) return; isOpponentTurnProcessing = true;
+  drawCard(opponentDeck, opponentHand, ".opponent-hand");
+  let played = 0;
+  while (played < 3 && opponentMana > 0) {
+    const list = opponentHand.filter(c => c.mana <= opponentMana);
+    if (list.length === 0) break;
+    const card = list[0]; const idx = opponentHand.indexOf(card);
+    opponentPlayCard(card, idx); played++;
+  }
+  setTimeout(() => { isOpponentTurnProcessing = false; endTurn(); }, 1500);
+}
+function opponentPlayCard(card, idx) {
+  opponentMana -= card.mana; updateManaDisplays();
+  opponentHand.splice(idx, 1); document.querySelector(`.opponent-hand .card[data-id="${card.id}"]`)?.remove();
+  if (card.type === "spell") {
+    const zones = [];
+    for (let i = 1; i <= 3; i++) if (!opponentSpellField.find(e => e.zone === `opponent-spell-zone-${i}`)) zones.push(i);
+    if (zones.length > 0) {
+      const z = zones[Math.floor(Math.random() * zones.length)];
+      opponentSpellField.push({ card, zone: `opponent-spell-zone-${z}` });
+      updateOpponentSpellZone();
+      const el = document.querySelector(`#opponent-spell-zone-${z} .card`);
+      if (el) { el.classList.add('spell-glow'); addDeckAnimation(el, opponentDeckColor, 'spell'); playSound('spell-sound'); }
+      setTimeout(() => {
+        opponentSpellField = opponentSpellField.filter(e => e.card.id !== card.id);
+        opponentCrypt.push(card); updateOpponentCrypt(); updateOpponentSpellZone();
+      }, 800);
+      if (card.effect.includes("damage")) { const dmg = card.effect.includes("3") ? 3 : 2; playerLife -= dmg; document.getElementById('player-life').innerText = `Player Life: ${playerLife}`; }
+      else if (card.effect === "Restore 3 life") { opponentLife += 3; document.getElementById('opponent-life').innerText = `Opponent Life: ${opponentLife}`; }
+      else if (card.effect === "Draw 2 cards") { for (let i = 0; i < 2 && opponentHand.length < maxHandSize; i++) drawCard(opponentDeck, opponentHand, ".opponent-hand"); }
+    }
+  } else {
+    const zones = [];
+    for (let i = 1; i <= 5; i++) if (!opponentPlayedCards.find(e => e.zone === `opponent-monster-zone-${i}`)) zones.push(i);
+    if (zones.length > 0) {
+      const z = zones[Math.floor(Math.random() * zones.length)];
+      card.hasAttacked = false; opponentPlayedCards.push({ card, zone: `opponent-monster-zone-${z}` });
+      updateOpponentZone();
+      const el = document.querySelector(`#opponent-monster-zone-${z} .card`);
+      if (el) { el.classList.add('summon-glow'); addDeckAnimation(el, opponentDeckColor, 'summon'); setTimeout(() => el.classList.remove('summon-glow'), 1200); }
+    }
+  }
+  checkGameOver();
+}
+
+// ── START GAME ──
+window.addEventListener('load', () => {
+  showDeckSelectionPopup(); // Now defined!
+});
+</script>
+</body>
+</html>
