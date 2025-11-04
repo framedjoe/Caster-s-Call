@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
   <title>Caster's Call</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
@@ -10,61 +10,93 @@
       --gold: #ffd700; --gold-glow: rgba(255,215,0,0.6);
       --blue: #87ceeb; --red: #ff6b6b;
       --bg-dark: #0f0c29; --bg-mid: #302b63; --bg-light: #24243e;
+      --scale: 1.5; /* 1440/960 = 1.5x */
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Roboto', sans-serif;
       background: linear-gradient(-45deg, var(--bg-dark), var(--bg-mid), var(--bg-light), var(--bg-dark));
       background-size: 400% 400%; animation: gradient 15s ease infinite;
-      color: white; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 10px;
+      color: white; display: flex; justify-content: center; align-items: center; padding: 0;
+      overflow: hidden;
     }
     @keyframes gradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
     h1, h2, h3, .game-title-opponent, .game-title-player, .turn-indicator, .card-name { font-family: 'Cinzel', serif; }
+  
+    /* 1.5x SCALED GAME BOARD */
     #game {
-      position: relative; width: 100%; max-width: 1000px; padding: 30px;
-      background: rgba(15,15,25,0.7); border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.37), 0 0 0 1px rgba(255,215,0,0.1);
-      backdrop-filter: blur(12px); border: 1px solid rgba(255,215,0,0.2);
+      position: relative; width: calc(960px * var(--scale)); height: calc(640px * var(--scale)); padding: calc(1px * var(--scale));
+      background: rgba(15,15,25,0.7); border-radius: calc(20px * var(--scale));
+      box-shadow: 0 calc(8px * var(--scale)) calc(32px * var(--scale)) rgba(0,0,0,0.37), 0 0 0 calc(1px * var(--scale)) rgba(255,215,0,0.1);
+      backdrop-filter: blur(calc(12px * var(--scale))); border: calc(1px * var(--scale)) solid rgba(255,215,0,0.2);
+      overflow: hidden;
+      display: flex; flex-direction: column; justify-content: space-between;
+      transform-origin: top left;
     }
     .game-title-opponent, .game-title-player {
       position: absolute; top: 0; height: 100%; writing-mode: vertical-rl; text-orientation: mixed;
-      font-size: 28px; font-weight: bold; color: var(--gold); text-align: center;
-      background: rgba(0,0,0,0.5); padding: 10px 5px; border-radius: 8px; text-shadow: 0 0 10px var(--gold-glow);
+      font-size: calc(14px * var(--scale)); font-weight: bold; color: var(--gold); text-align: center;
+      background: rgba(0,0,0,0.5); padding: calc(4px * var(--scale)) calc(2px * var(--scale)); border-radius: calc(4px * var(--scale));
+      text-shadow: 0 0 calc(10px * var(--scale)) var(--gold-glow);
     }
-    .game-title-opponent { left: 8px; } .game-title-player { right: 8px; }
-    .turn-info { text-align: center; margin: 15px 0; }
+    .game-title-opponent { left: calc(1px * var(--scale)); } .game-title-player { right: calc(1px * var(--scale)); }
+    .turn-info { text-align: center; margin: calc(1px * var(--scale)) 0; flex: 0 0 auto; }
     .turn-indicator {
-      display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #1a1a1a, #333);
-      border: 3px solid var(--gold); border-radius: 50px; font-size: 24px; font-weight: bold; color: var(--gold);
-      text-shadow: 0 0 10px var(--gold); box-shadow: 0 0 20px rgba(255,215,0,0.4); animation: turn-glow 2s infinite alternate;
+      display: inline-block; padding: calc(3px * var(--scale)) calc(7px * var(--scale));
+      background: linear-gradient(135deg, #1a1a1a, #333);
+      border: calc(1px * var(--scale)) solid var(--gold); border-radius: calc(21px * var(--scale));
+      font-size: calc(11px * var(--scale)); font-weight: bold; color: var(--gold);
+      text-shadow: 0 0 calc(10px * var(--scale)) var(--gold);
+      box-shadow: 0 0 calc(20px * var(--scale)) rgba(255,215,0,0.4); animation: turn-glow 2s infinite alternate;
     }
-    @keyframes turn-glow { from { box-shadow: 0 0 20px rgba(255,215,0,0.4); } to { box-shadow: 0 0 30px rgba(255,215,0,0.8), 0 0 40px rgba(255,215,0,0.3); } }
+    @keyframes turn-glow {
+      from { box-shadow: 0 0 calc(20px * var(--scale)) rgba(255,215,0,0.4); }
+      to { box-shadow: 0 0 calc(30px * var(--scale)) rgba(255,215,0,0.8), 0 0 calc(40px * var(--scale)) rgba(255,215,0,0.3); }
+    }
     .turn-counter {
-      font-size: 18px; font-weight: bold; color: #ffea00; background: rgba(0,0,0,0.7); padding: 6px 14px;
-      border: 2px solid #ffea00; border-radius: 50px; display: inline-block; margin-left: 12px; animation: pulse 2s infinite;
+      font-size: calc(8px * var(--scale)); font-weight: bold; color: #ffea00; background: rgba(0,0,0,0.7);
+      padding: calc(2px * var(--scale)) calc(6px * var(--scale));
+      border: calc(1px * var(--scale)) solid #ffea00; border-radius: calc(21px * var(--scale));
+      display: inline-block; margin-left: calc(4px * var(--scale)); animation: pulse 2s infinite;
     }
     @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.02)} }
-    .status { display: flex; justify-content: space-between; margin: 12px 0; font-weight: bold; background: rgba(0,0,0,0.5); padding: 12px; border-radius: 8px; align-items: center; flex-wrap: wrap; gap: 10px; }
+    /* LIFE TEXT: Moved inward 90px (60px * 1.5) */
+    .status {
+      display: flex; justify-content: space-between; margin: calc(1px * var(--scale)) 0; font-weight: bold;
+      background: rgba(0,0,0,0.5); padding: calc(3px * var(--scale)); border-radius: calc(3px * var(--scale));
+      align-items: center; flex-wrap: wrap; gap: calc(2px * var(--scale)); font-size: calc(8px * var(--scale)); flex: 0 0 auto;
+    }
+    .status span {
+      flex: 0 0 auto; min-width: calc(80px * var(--scale)); text-align: center;
+    }
+    .status > span:first-child { margin-left: calc(60px * var(--scale)); }
+    .status > span:last-child { margin-right: calc(60px * var(--scale)); }
     .opponent-spell-zones, .opponent-monster-zones, .player-monster-zones, .player-spell-zones {
-      display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 10px; flex-wrap: nowrap;
-      overflow-x: auto; padding: 8px 0; margin: 10px 0;
+      display: flex; flex-direction: row; justify-content: center; align-items: center; gap: calc(1px * var(--scale)); flex-wrap: nowrap;
+      overflow-x: auto; padding: calc(1px * var(--scale)) 0; margin: calc(1px * var(--scale)) 0; flex: 1 0 auto;
     }
     .player-monster-zone, .opponent-monster-zone, .player-spell-zone, .opponent-spell-zone {
-      flex: 0 0 auto; width: 126px; height: 174px; min-width: 126px; border: 2px solid var(--gold); border-radius: 12px;
+      flex: 0 0 auto; width: calc(56px * var(--scale)); height: calc(78px * var(--scale)); min-width: calc(56px * var(--scale));
+      border: calc(1px * var(--scale)) solid var(--gold); border-radius: calc(6px * var(--scale));
       display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); position: relative; transition: all 0.3s;
     }
     .opponent-monster-zone { background: rgba(255,0,0,0.1); }
     .zone {
-      display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: 10px; overflow-x: auto;
-      overflow-y: hidden; padding: 10px; border: 2px dashed #ffd70033; border-radius: 12px; background: rgba(0,0,0,0.3);
-      min-height: 180px; backdrop-filter: blur(4px); scrollbar-width: thin; scrollbar-color: #ffd700 #333;
+      display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: calc(1px * var(--scale)); overflow-x: auto;
+      overflow-y: hidden; padding: calc(1px * var(--scale)); border: calc(1px * var(--scale)) dashed #ffd70033;
+      border-radius: calc(6px * var(--scale)); background: rgba(0,0,0,0.3);
+      min-height: calc(94.46px * var(--scale));
+      backdrop-filter: blur(calc(4px * var(--scale))); scrollbar-width: thin; scrollbar-color: #ffd700 #333; flex: 1 0 auto;
     }
-    .zone::-webkit-scrollbar { height: 8px; }
-    .zone::-webkit-scrollbar-track { background: #333; border-radius: 4px; }
-    .zone::-webkit-scrollbar-thumb { background: #ffd700; border-radius: 4px; }
-    .playable-zone { border: 3px solid #00ff00 !important; background: rgba(0,255,0,0.15) !important; box-shadow: 0 0 20px #00ff00 !important; transform: scale(1.05); }
+    .zone::-webkit-scrollbar { height: calc(3px * var(--scale)); }
+    .zone::-webkit-scrollbar-track { background: #333; border-radius: calc(2px * var(--scale)); }
+    .zone::-webkit-scrollbar-thumb { background: #ffd700; border-radius: calc(2px * var(--scale)); }
+    /* CARDS: 1.5x SCALED */
     .card {
-      width: 110px; height: 160px; border-radius: 12px; overflow: hidden; position: relative; cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 0 3px #000, 0 0 0 5px var(--gold); transition: all 0.3s ease; background: #111 !important;
+      width: calc(56px * var(--scale)); height: calc(78px * var(--scale)); border-radius: calc(6px * var(--scale));
+      overflow: hidden; position: relative; cursor: pointer;
+      box-shadow: 0 calc(3px * var(--scale)) calc(6px * var(--scale)) rgba(0,0,0,0.4), 0 0 0 calc(2px * var(--scale)) #000, 0 0 0 calc(4px * var(--scale)) var(--gold);
+      transition: all 0.3s ease; background: #111 !important;
       transform-style: preserve-3d; perspective: 1000px;
     }
     .card.opponent-hand { cursor: default !important; pointer-events: none; }
@@ -73,82 +105,125 @@
       pointer-events: none; z-index: 1;
     }
     .card:hover:not(.opponent-hand):not(.has-attacked) {
-      transform: translateY(-10px) scale(1.08) rotateX(5deg); box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 0 3px #000, 0 0 0 5px var(--gold), 0 0 20px var(--gold-glow); z-index: 10;
+      transform: translateY(calc(-7px * var(--scale))) scale(1.08) rotateX(5deg);
+      box-shadow: 0 calc(14px * var(--scale)) calc(28px * var(--scale)) rgba(0,0,0,0.6), 0 0 0 calc(2px * var(--scale)) #000, 0 0 0 calc(4px * var(--scale)) var(--gold), 0 0 calc(14px * var(--scale)) var(--gold-glow); z-index: 10;
     }
-    .card.selected { transform: translateY(-15px) scale(1.12) !important; box-shadow: 0 0 0 4px #00ff00, 0 0 30px #00ff00 !important; }
-    .card.playable { box-shadow: 0 0 0 4px #00ff00, 0 0 25px #00ff00 !important; animation: pulse-playable 1.5s infinite; }
-    @keyframes pulse-playable { 0%, 100% { box-shadow: 0 0 0 4px #00ff00, 0 0 20px #00ff00; } 50% { box-shadow: 0 0 0 6px #00ff00, 0 0 35px #00ff00; } }
-    .card-mana { position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; background: #000; border: 2px solid var(--gold); border-radius: 50%; color: var(--gold); font-weight: bold; font-size: 11px; display: flex; align-items: center; justify-content: center; z-index: 2; box-shadow: 0 0 8px var(--gold-glow); }
-    .card .art { position: absolute; top: 12px; left: 8px; right: 8px; height: 80px; border-radius: 8px; overflow: hidden; background: #000; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+    .card-mana {
+      position: absolute; top: calc(2px * var(--scale)); right: calc(2px * var(--scale));
+      width: calc(12px * var(--scale)); height: calc(12px * var(--scale)); background: #000;
+      border: calc(1px * var(--scale)) solid var(--gold); border-radius: 50%; color: var(--gold);
+      font-weight: bold; font-size: calc(7px * var(--scale)); display: flex; align-items: center; justify-content: center; z-index: 2;
+      box-shadow: 0 0 calc(6px * var(--scale)) var(--gold-glow);
+    }
+    .card .art {
+      position: absolute; top: calc(5px * var(--scale)); left: calc(3px * var(--scale)); right: calc(3px * var(--scale));
+      height: calc(40px * var(--scale)); border-radius: calc(4px * var(--scale)); overflow: hidden; background: #000;
+      box-shadow: inset 0 0 calc(7px * var(--scale)) rgba(0,0,0,0.5);
+    }
     .card .art img { width: 100%; height: 100%; object-fit: cover; }
-    .card-name { position: absolute; top: 8px; left: 0; right: 0; font-size: 11px; font-weight: bold; text-align: center; color: var(--gold); text-shadow: 1px 1px 2px #000; z-index: 2; padding: 0 4px; }
-    .card-stats { position: absolute; bottom: 6px; left: 6px; right: 6px; background: rgba(0,0,0,0.7); padding: 3px 6px; border-radius: 6px; font-size: 9px; color: #fff; text-align: center; z-index: 2; border: 1px solid var(--gold); }
+    .card-name {
+      position: absolute; top: calc(3px * var(--scale)); left: 0; right: 0; font-size: calc(7px * var(--scale));
+      font-weight: bold; text-align: center; color: var(--gold); text-shadow: 1px 1px 2px #000; z-index: 2; padding: 0 calc(2px * var(--scale));
+    }
+    .card-stats {
+      position: absolute; bottom: calc(2px * var(--scale)); left: calc(2px * var(--scale)); right: calc(2px * var(--scale));
+      background: rgba(0,0,0,0.7); padding: calc(1px * var(--scale)) calc(2px * var(--scale)); border-radius: calc(2px * var(--scale));
+      font-size: calc(5px * var(--scale)); color: #fff; text-align: center; z-index: 2; border: calc(1px * var(--scale)) solid var(--gold);
+    }
     .card.opponent-hand::before { background: linear-gradient(to bottom, rgba(0,0,0,0.9), rgba(0,0,0,0.95)) !important; }
     .card.opponent-hand .card-name { color: #666; }
-    .card.no-art { background: #333 !important; }
-    .card.no-art .art { display: none; }
-    .attacking { animation: attackAnim 0.9s ease-out !important; }
-    @keyframes attackAnim { 0% { transform: scale(1) translateY(0); } 30% { transform: scale(1.2) translateX(20px); } 60% { transform: scale(0.9) translateX(40px); } 100% { transform: scale(1) translateX(0); } }
-    .attacked { animation: damageAnim 0.8s ease-out; }
-    @keyframes damageAnim { 0% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.3); filter: brightness(2); } 100% { transform: scale(0); filter: brightness(0); opacity: 0; } }
-    .has-attacked { filter: grayscale(50%) brightness(0.7); cursor: not-allowed; }
-    .spell-glow { animation: spellGlow 0.8s ease-out; box-shadow: 0 0 30px #00ffff, 0 0 50px #00ffff !important; }
-    @keyframes spellGlow { 0% { transform: scale(1); box-shadow: 0 0 10px #00ffff; } 50% { transform: scale(1.15); box-shadow: 0 0 50px #00ffff, 0 0 80px #00ffff; } 100% { transform: scale(1); box-shadow: 0 0 10px #00ffff; } }
-    .summon-glow { animation: summonGlow 1.2s ease-out; }
-    @keyframes summonGlow { 0% { transform: scale(0.8); opacity: 0; filter: brightness(2); } 50% { transform: scale(1.2); filter: brightness(1.5); } 100% { transform: scale(1); opacity: 1; filter: brightness(1); } }
+    /* DECK & CRYPT: 1.5x SCALED + COLORS RESTORED */
     .player-deck, .opponent-deck, .player-crypt, .opponent-crypt {
-      width: 100px; height: 150px; border: 2px solid var(--gold); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); font-size: 13px; color: var(--gold); cursor: pointer; transition: all 0.3s;
+      width: calc(56px * var(--scale)); height: calc(78px * var(--scale)); border: calc(1px * var(--scale)) solid var(--gold);
+      border-radius: calc(6px * var(--scale)); display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: calc(4px * var(--scale)); box-shadow: 0 calc(3px * var(--scale)) calc(8px * var(--scale)) rgba(0,0,0,0.4);
+      font-size: calc(7px * var(--scale)); color: var(--gold); cursor: pointer; transition: all 0.3s;
     }
-    .player-deck:hover, .opponent-deck:hover { transform: translateY(-5px); }
-    .player-deck.blue-deck, .opponent-deck.blue-deck { background: linear-gradient(to bottom, #172554, #93c5fd); }
-    .player-deck.red-deck, .opponent-deck.red-deck { background: linear-gradient(to bottom, #991b1b, #ef4444); }
-    .player-crypt, .opponent-crypt { background: linear-gradient(to bottom, #444, #222); }
-    .mana-crystals { display: inline-flex; gap: 4px; align-items: center; }
-    .mana-crystal { width: 22px; height: 22px; margin: 0 3px; border-radius: 50%; background: #333; border: 2px solid #666; position: relative; transition: all 0.3s; }
-    .mana-crystal.filled { background: #00ff00; border-color: #00ff00; box-shadow: 0 0 15px #00ff00, inset 0 0 10px rgba(255,255,255,0.5); animation: mana-pulse 2s infinite; }
-    .mana-crystal.filled.blue { background: var(--blue); box-shadow: 0 0 15px var(--blue), inset 0 0 10px white; }
-    .mana-crystal.filled.red { background: var(--red); box-shadow: 0 0 15px var(--red), inset 0 0 10px white; }
+    .player-deck:hover, .opponent-deck:hover { transform: translateY(calc(-5px * var(--scale))); }
+    .player-deck.blue-deck, .opponent-deck.blue-deck {
+      background: linear-gradient(to bottom, #172554, #93c5fd);
+    }
+    .player-deck.red-deck, .opponent-deck.red-deck {
+      background: linear-gradient(to bottom, #991b1b, #ef4444);
+    }
+    .player-crypt, .opponent-crypt {
+      background: linear-gradient(to bottom, #444, #222);
+    }
+    .mana-crystals { display: inline-flex; gap: calc(1px * var(--scale)); align-items: center; }
+    .mana-crystal {
+      width: calc(10px * var(--scale)); height: calc(10px * var(--scale)); margin: 0 calc(1px * var(--scale));
+      border-radius: 50%; background: #333; border: calc(1px * var(--scale)) solid #666; position: relative; transition: all 0.3s;
+    }
+    .mana-crystal.filled { background: #00ff00; border-color: #00ff00; box-shadow: 0 0 calc(10px * var(--scale)) #00ff00, inset 0 0 calc(7px * var(--scale)) rgba(255,255,255,0.5); animation: mana-pulse 2s infinite; }
+    .mana-crystal.filled.blue { background: var(--blue); box-shadow: 0 0 calc(10px * var(--scale)) var(--blue), inset 0 0 calc(7px * var(--scale)) white; }
+    .mana-crystal.filled.red { background: var(--red); box-shadow: 0 0 calc(10px * var(--scale)) var(--red), inset 0 0 calc(7px * var(--scale)) white; }
     @keyframes mana-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+    /* BUTTONS: COLORS RESTORED + SCALED */
     button {
-      padding: 12px 24px; margin: 8px; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
-      cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); position: relative; overflow: hidden;
+      padding: calc(4px * var(--scale)) calc(8px * var(--scale)); margin: calc(2px * var(--scale)); border: none; border-radius: calc(3px * var(--scale));
+      font-weight: bold; text-transform: uppercase; letter-spacing: calc(1px * var(--scale));
+      cursor: pointer; transition: all 0.3s; box-shadow: 0 calc(3px * var(--scale)) calc(10px * var(--scale)) rgba(0,0,0,0.3);
+      position: relative; overflow: hidden; min-height: calc(20px * var(--scale)); font-size: calc(7px * var(--scale));
     }
-    button::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); transition: 0.5s; }
-    button:hover::before { left: 100%; } button:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+    button::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); transition: 0.5s; }
+    button:hover::before { left: 100%; }
+    button:hover { transform: translateY(calc(-3px * var(--scale))); box-shadow: 0 calc(6px * var(--scale)) calc(14px * var(--scale)) rgba(0,0,0,0.4); }
     #draw-button { background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; }
     #favor-button { background: linear-gradient(135deg, #ff6b6b, #ee5a52); color: white; }
     #attack-button { background: linear-gradient(135deg, #ff9a56, #ff6b6b); color: white; }
     button#end-turn { background: linear-gradient(135deg, #333, #111); color: var(--gold); }
-    #deck-selection-popup, #game-over-popup, #player-crypt-popup, #opponent-crypt-popup {
-      display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); padding: 30px;
-      border: 3px solid var(--gold); border-radius: 16px; text-align: center; color: var(--gold); font-size: 24px; font-weight: bold; z-index: 1000;
-      box-shadow: 0 0 40px rgba(255,215,0,0.4);
+    #cancel-button { background: linear-gradient(135deg, #999, #666); color: white; display: none; }
+    /* HAND CONTAINERS: 1.5x SCALED */
+    .opponent-hand-container, .player-hand-container {
+      width: calc(555.898px * var(--scale)); height: calc(94.46px * var(--scale));
+      margin-left: calc(27.795px * var(--scale)); /* 5% right shift */
     }
-    .deck-button-blue, .deck-button-red { background: linear-gradient(to bottom, #87ceeb, #4682b4); color: white; border: 2px solid var(--gold); margin: 15px; padding: 18px 36px; font-size: 22px; border-radius: 12px; }
+    /* Added back from original: Playable zones, selections, animations, etc. */
+    .playable-zone { border: calc(3px * var(--scale)) solid #00ff00 !important; background: rgba(0,255,0,0.15) !important; box-shadow: 0 0 calc(20px * var(--scale)) #00ff00 !important; transform: scale(1.05); }
+    .card.selected { transform: translateY(calc(-15px * var(--scale))) scale(1.12) !important; box-shadow: 0 0 0 calc(4px * var(--scale)) #00ff00, 0 0 calc(30px * var(--scale)) #00ff00 !important; }
+    .card.playable { box-shadow: 0 0 0 calc(4px * var(--scale)) #00ff00, 0 0 calc(25px * var(--scale)) #00ff00 !important; animation: pulse-playable 1.5s infinite; }
+    @keyframes pulse-playable { 0%, 100% { box-shadow: 0 0 0 calc(4px * var(--scale)) #00ff00, 0 0 calc(20px * var(--scale)) #00ff00; } 50% { box-shadow: 0 0 0 calc(6px * var(--scale)) #00ff00, 0 0 calc(35px * var(--scale)) #00ff00; } }
+    .card.no-art { background: #333 !important; }
+    .card.no-art .art { display: none; }
+    .attacking { animation: attackAnim 0.9s ease-out !important; }
+    @keyframes attackAnim { 0% { transform: scale(1) translateY(0); } 30% { transform: scale(1.2) translateX(calc(20px * var(--scale))); } 60% { transform: scale(0.9) translateX(calc(40px * var(--scale))); } 100% { transform: scale(1) translateX(0); } }
+    .attacked { animation: damageAnim 0.8s ease-out; }
+    @keyframes damageAnim { 0% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.3); filter: brightness(2); } 100% { transform: scale(0); filter: brightness(0); opacity: 0; } }
+    .has-attacked { filter: grayscale(50%) brightness(0.7); cursor: not-allowed; }
+    .spell-glow { animation: spellGlow 0.8s ease-out; box-shadow: 0 0 calc(30px * var(--scale)) #00ffff, 0 0 calc(50px * var(--scale)) #00ffff !important; }
+    @keyframes spellGlow { 0% { transform: scale(1); box-shadow: 0 0 calc(10px * var(--scale)) #00ffff; } 50% { transform: scale(1.15); box-shadow: 0 0 calc(50px * var(--scale)) #00ffff, 0 0 calc(80px * var(--scale)) #00ffff; } 100% { transform: scale(1); box-shadow: 0 0 calc(10px * var(--scale)) #00ffff; } }
+    .summon-glow { animation: summonGlow 1.2s ease-out; }
+    @keyframes summonGlow { 0% { transform: scale(0.8); opacity: 0; filter: brightness(2); } 50% { transform: scale(1.2); filter: brightness(1.5); } 100% { transform: scale(1); opacity: 1; filter: brightness(1); } }
+    #deck-selection-popup, #game-over-popup, #player-crypt-popup, #opponent-crypt-popup {
+      display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); padding: calc(30px * var(--scale));
+      border: calc(3px * var(--scale)) solid var(--gold); border-radius: calc(16px * var(--scale)); text-align: center; color: var(--gold); font-size: calc(24px * var(--scale)); font-weight: bold; z-index: 1000;
+      box-shadow: 0 0 calc(40px * var(--scale)) rgba(255,215,0,0.4);
+    }
+    .deck-button-blue, .deck-button-red { background: linear-gradient(to bottom, #87ceeb, #4682b4); color: white; border: calc(2px * var(--scale)) solid var(--gold); margin: calc(15px * var(--scale)); padding: calc(18px * var(--scale)) calc(36px * var(--scale)); font-size: calc(22px * var(--scale)); border-radius: calc(12px * var(--scale)); }
     .deck-button-red { background: linear-gradient(to bottom, #ff9999, #cc6666); }
     .card-tooltip {
-      position: absolute; background: linear-gradient(135deg, #1a1a1a, #2d2d2d); border: 2px solid var(--gold); border-radius: 12px; padding: 16px; max-width: 280px;
-      font-size: 14px; color: var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.6); z-index: 1002; opacity: 0; visibility: hidden; transform: translateY(10px);
+      position: absolute; background: linear-gradient(135deg, #1a1a1a, #2d2d2d); border: calc(2px * var(--scale)) solid var(--gold); border-radius: calc(12px * var(--scale)); padding: calc(16px * var(--scale)); max-width: calc(280px * var(--scale));
+      font-size: calc(14px * var(--scale)); color: var(--gold); box-shadow: 0 calc(10px * var(--scale)) calc(30px * var(--scale)) rgba(0,0,0,0.6); z-index: 1002; opacity: 0; visibility: hidden; transform: translateY(calc(10px * var(--scale)));
       transition: all 0.3s ease; pointer-events: none;
     }
     .card-tooltip.show { opacity: 1; visibility: visible; transform: translateY(0); }
-    .card-tooltip h3 { margin: 0 0 8px; font-size: 18px; color: #fff; }
+    .card-tooltip h3 { margin: 0 0 calc(8px * var(--scale)); font-size: calc(18px * var(--scale)); color: #fff; }
     #notification {
-      position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: var(--gold); padding: 12px 24px;
-      border: 2px solid var(--gold); border-radius: 50px; font-size: 18px; font-weight: bold; z-index: 1001; opacity: 0; transition: opacity .5s; pointer-events: none;
-      box-shadow: 0 0 20px rgba(255,215,0,0.4);
+      position: fixed; top: calc(20px * var(--scale)); left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); color: var(--gold); padding: calc(12px * var(--scale)) calc(24px * var(--scale));
+      border: calc(2px * var(--scale)) solid var(--gold); border-radius: calc(50px * var(--scale)); font-size: calc(18px * var(--scale)); font-weight: bold; z-index: 1001; opacity: 0; transition: opacity .5s; pointer-events: none;
+      box-shadow: 0 0 calc(20px * var(--scale)) rgba(255,215,0,0.4);
     }
     #notification.show { opacity: 1; }
-    @keyframes particle { to { transform: translateY(-120px) scale(0); opacity: 0; } }
+    @keyframes particle { to { transform: translateY(calc(-120px * var(--scale))) scale(0); opacity: 0; } }
     @media (max-width: 768px) {
-      #game { padding: 15px; }
-      .card { width: 90px; height: 130px; }
-      .player-monster-zone, .opponent-monster-zone, .player-spell-zone, .opponent-spell-zone { width: 100px; height: 140px; }
-      .turn-indicator { font-size: 20px; padding: 10px 20px; }
+      #game { padding: calc(15px * var(--scale)); }
+      .card { width: calc(90px * var(--scale)); height: calc(130px * var(--scale)); }
+      .player-monster-zone, .opponent-monster-zone, .player-spell-zone, .opponent-spell-zone { width: calc(100px * var(--scale)); height: calc(140px * var(--scale)); }
+      .turn-indicator { font-size: calc(20px * var(--scale)); padding: calc(10px * var(--scale)) calc(20px * var(--scale)); }
     }
-    .ai-attack-target { box-shadow: 0 0 0 4px #ff0000, 0 0 30px #ff0000 !important; animation: aiTargetPulse 1s infinite; }
-    @keyframes aiTargetPulse { 0%, 100% { box-shadow: 0 0 0 4px #ff0000, 0 0 20px #ff0000; } 50% { box-shadow: 0 0 0 6px #ff0000, 0 0 40px #ff0000; } }
+    .ai-attack-target { box-shadow: 0 0 0 calc(4px * var(--scale)) #ff0000, 0 0 calc(30px * var(--scale)) #ff0000 !important; animation: aiTargetPulse 1s infinite; }
+    @keyframes aiTargetPulse { 0%, 100% { box-shadow: 0 0 0 calc(4px * var(--scale)) #ff0000, 0 0 calc(20px * var(--scale)) #ff0000; } 50% { box-shadow: 0 0 0 calc(6px * var(--scale)) #ff0000, 0 0 calc(40px * var(--scale)) #ff0000; } }
   </style>
 </head>
 <body>
@@ -163,10 +238,10 @@
     <span id="opponent-life">Opponent Life: 20</span>
     <div id="opponent-mana-crystals" class="mana-crystals"></div>
   </div>
-  <div class="opponent-hand-container">
+  <div class="opponent-hand-container" style="display: flex; align-items: center; gap: calc(1px * var(--scale)); flex: 1 0 auto;">
     <div class="opponent-deck" id="opponent-deck">Deck: 30</div>
     <div class="opponent-crypt" id="opponent-crypt">Crypt: 0</div>
-    <div class="opponent-hand zone"></div>
+    <div class="opponent-hand zone" style="flex: 1; overflow-x: auto; display: flex; gap: calc(1px * var(--scale));"></div>
   </div>
   <div class="opponent-spell-zones">
     <div class="opponent-spell-zone" id="opponent-spell-zone-1"></div>
@@ -192,8 +267,8 @@
     <div class="player-spell-zone" id="player-spell-zone-2"></div>
     <div class="player-spell-zone" id="player-spell-zone-3"></div>
   </div>
-  <div class="player-hand-container">
-    <div class="player-hand zone"></div>
+  <div class="player-hand-container" style="display: flex; align-items: center; gap: calc(1px * var(--scale)); flex: 1 0 auto;">
+    <div class="player-hand zone" style="flex: 1; overflow-x: auto;"></div>
     <div class="player-deck" id="player-deck">Deck: 30</div>
     <div class="player-crypt" id="player-crypt">Crypt: 0</div>
   </div>
@@ -201,12 +276,13 @@
     <span id="player-life">Player Life: 20</span>
     <div id="player-mana-crystals" class="mana-crystals"></div>
   </div>
-  <div style="text-align:center; margin-top:15px;">
+  <div style="text-align:center; margin-top:calc(1px * var(--scale)); flex: 0 0 auto;">
     <button onclick="playerDraw()" id="draw-button">Draw</button>
     <button onclick="useFavor()" id="favor-button">Favor</button>
     <button onclick="startAttackPhase()" id="attack-button">Attack</button>
     <button onclick="endTurn()" id="end-turn">End Turn</button>
     <button onclick="attackLifePoints()" id="attack-life-button" style="display: none;">Attack Life</button>
+    <button onclick="cancelSelection()" id="cancel-button" style="display: none;">Cancel</button>
   </div>
   <div id="deck-selection-popup">
     <div>Choose Your Starting Deck</div>
@@ -235,7 +311,6 @@
   <audio id="spell-sound" src="https://cdn.jsdelivr.net/gh/freesound/freesound-api@master/sounds/346689__natef006__magic.mp3"></audio>
   <audio id="turn-sound" src="https://cdn.jsdelivr.net/gh/freesound/freesound-api@master/sounds/387233__daronious__chime.mp3"></audio>
 </div>
-
 <script>
 // ────────────────────────────────────────────────────────────────────────
 // FULL GAME LOGIC – WITH AI ATTACKS (SUGGESTION #8)
@@ -252,9 +327,9 @@ let isOpponentTurnProcessing = false;
 let playerDeckColor = null, opponentDeckColor = null;
 let turnCount = 1;
 const maxHandSize = 7;
+const maxMana = 20;
 const tooltip = document.getElementById('tooltip');
 let selectedHandCard = null;
-
 const blueCardTemplates = [
   { name: "Holy Lamb", type: "creature", atk: 1, def: 1, mana: 0, art: "holy-lamb.png" },
   { name: "Holy Lamb", type: "creature", atk: 1, def: 1, mana: 0, art: "holy-lamb.png" },
@@ -287,7 +362,6 @@ const blueCardTemplates = [
   { name: "Resurrection", type: "spell", effect: "Revive a monster from the Crypt", mana: 2, art: "resurrection.png" },
   { name: "Resurrection", type: "spell", effect: "Revive a monster from the Crypt", mana: 2, art: "resurrection.png" }
 ];
-
 const redCardTemplates = [
   { name: "Flame Kobold", type: "creature", atk: 1, def: 1, mana: 0, art: "flame-kobold.png" },
   { name: "Flame Kobold", type: "creature", atk: 1, def: 1, mana: 0, art: "flame-kobold.png" },
@@ -320,14 +394,13 @@ const redCardTemplates = [
   { name: "Resurrection", type: "spell", effect: "Revive a monster from the Crypt", mana: 2, art: "resurrection.png" },
   { name: "Resurrection", type: "spell", effect: "Revive a monster from the Crypt", mana: 2, art: "resurrection.png" }
 ];
-
 // ── HELPERS ──
 function playSound(id) { const s = document.getElementById(id); if (s) { s.currentTime = 0; s.play().catch(() => {}); } }
 function showNotification(msg) { const n = document.getElementById('notification'); n.innerText = msg; n.classList.add('show'); setTimeout(() => n.classList.remove('show'), 3000); }
 function addParticles(el) {
   for (let i = 0; i < 10; i++) {
     const p = document.createElement('div');
-    p.style.cssText = `position: absolute; width: 6px; height: 6px; background: #00ff00; border-radius: 50%; pointer-events: none; z-index: 5; left: ${50 + (Math.random()-0.5)*60}px; top: ${80 + (Math.random()-0.5)*40}px; animation: particle 0.8s ease-out forwards;`;
+    p.style.cssText = `position: absolute; width: calc(6px * var(--scale)); height: calc(6px * var(--scale)); background: #00ff00; border-radius: 50%; pointer-events: none; z-index: 5; left: ${50 + (Math.random()-0.5)*60}px; top: ${80 + (Math.random()-0.5)*40}px; animation: particle 0.8s ease-out forwards;`;
     el.appendChild(p); setTimeout(() => p.remove(), 800);
   }
 }
@@ -350,7 +423,7 @@ function updateTurnDisplay() {
   document.getElementById("turn-indicator").innerText = turn === "player" ? "Player's Turn" : "Opponent's Turn";
   document.getElementById("turn-counter").innerText = `Turn ${turnCount}`;
 }
-function renderManaCrystals(id, mana, max = 10, color = null) {
+function renderManaCrystals(id, mana, max = 20, color = null) {
   const c = document.getElementById(id); c.innerHTML = '';
   for (let i = 0; i < max; i++) {
     const crystal = document.createElement('div');
@@ -360,8 +433,8 @@ function renderManaCrystals(id, mana, max = 10, color = null) {
   }
 }
 function updateManaDisplays() {
-  renderManaCrystals('player-mana-crystals', playerMana, 10, playerDeckColor?.toLowerCase());
-  renderManaCrystals('opponent-mana-crystals', opponentMana, 10, opponentDeckColor?.toLowerCase());
+  renderManaCrystals('player-mana-crystals', playerMana, 20, playerDeckColor?.toLowerCase());
+  renderManaCrystals('opponent-mana-crystals', opponentMana, 20, opponentDeckColor?.toLowerCase());
 }
 function showDeckSelectionPopup() {
   const popup = document.getElementById("deck-selection-popup");
@@ -516,12 +589,13 @@ function updateOpponentSpellZone() {
 }
 function trySelectCardFromHand(div) {
   if (turn !== "player" || attackPhase) return;
-  if (selectedHandCard) selectedHandCard.classList.remove('selected'); selectedHandCard = null;
+  cancelSelection(); // Clear any previous selection
   const id = div.dataset.id;
   const card = playerHand.find(c => c.id === id);
   if (!card || card.mana > playerMana) { showNotification("Not enough mana!"); return; }
   selectedHandCard = div; div.classList.add('selected');
-  showNotification(`Selected: ${card.name} - Click a zone to play`);
+  document.getElementById("cancel-button").style.display = "inline";
+  showNotification(`Selected: ${card.name} - Click a zone to play or Cancel`);
   highlightAvailableZones(card.type);
 }
 function highlightAvailableZones(cardType) {
@@ -544,11 +618,24 @@ function highlightAvailableZones(cardType) {
     }
   }
 }
+function cancelSelection() {
+  if (selectedHandCard) {
+    selectedHandCard.classList.remove('selected');
+    selectedHandCard = null;
+  }
+  document.querySelectorAll('.player-monster-zone, .player-spell-zone').forEach(z => {
+    z.classList.remove('playable-zone');
+    z.onclick = null;
+  });
+  document.getElementById("cancel-button").style.display = "none";
+  showNotification("Selection canceled");
+}
 function playCardToZone(cardDiv, targetZoneId) {
   if (!selectedHandCard) return;
   const id = cardDiv.dataset.id;
   const card = playerHand.find(c => c.id === id);
   if (!card) return;
+  document.getElementById("cancel-button").style.display = "none";
   document.querySelectorAll('.player-monster-zone, .player-spell-zone').forEach(z => { z.classList.remove('playable-zone'); z.onclick = null; });
   selectedHandCard.classList.remove('selected'); selectedHandCard = null;
   if (card.type === "creature") {
@@ -621,6 +708,7 @@ for (let i = 1; i <= 5; i++) {
     card.hasAttacked = false; playerPlayedCards.push({ card, zone: zone.id });
     updatePlayerZone(); updateOpponentZone(); updateHandPlayability(); makeHandDraggable(); attachHandClickListeners();
     const newC = zone.querySelector(".card"); if (newC) { addParticles(newC); playSound('play-sound'); }
+    document.getElementById("cancel-button").style.display = "none";
     checkGameOver();
   });
 }
@@ -659,6 +747,7 @@ for (let i = 1; i <= 3; i++) {
         checkGameOver();
       }, 800);
     }
+    document.getElementById("cancel-button").style.display = "none";
   });
 }
 function useFavor() {
@@ -708,6 +797,7 @@ function attackLifePoints() {
   if (!selectedCard || selectedCard.hasAttacked) return;
   const damage = selectedCard.atk;
   opponentLife -= damage; document.getElementById("opponent-life").innerText = `Opponent Life: ${opponentLife}`;
+  opponentMana += damage; opponentMana = Math.min(opponentMana, maxMana); updateManaDisplays();
   selectedCard.hasAttacked = true; document.querySelector(`.card[data-id="${selectedCard.id}"]`).classList.add('has-attacked');
   selectedCard = null; updatePlayerZone(); checkGameOver();
 }
@@ -719,7 +809,7 @@ function endTurn() {
   playerPlayedCards.forEach(e => { if (e.card.type === "creature") e.card.hasAttacked = false; });
   opponentPlayedCards.forEach(e => { if (e.card.type === "creature") e.card.hasAttacked = false; });
   turn = turn === "player" ? "opponent" : "player"; turnCount++;
-  if (turn === "player") playerMana = Math.min(playerMana + 1, 10); else opponentMana = Math.min(opponentMana + 1, 10);
+  if (turn === "player") playerMana = Math.min(playerMana + 1, maxMana); else opponentMana = Math.min(opponentMana + 1, maxMana);
   updateManaDisplays(); playSound("turn-sound");
   if (turn === "player") {
     hasDrawn = false; hasUsedFavor = false;
@@ -743,7 +833,6 @@ function closeCryptPopup() {
   document.getElementById('player-crypt-popup').style.display = 'none';
   document.getElementById('opponent-crypt-popup').style.display = 'none';
 }
-
 // ── AI TURN WITH ATTACKS ──
 function opponentTurn() {
   if (isOpponentTurnProcessing) return; isOpponentTurnProcessing = true;
@@ -781,6 +870,7 @@ function opponentAttackPhase() {
         setTimeout(() => targetEl.remove(), 800);
       } else if (playerPlayedCards.length === 0) {
         playerLife -= attacker.card.atk; document.getElementById('player-life').innerText = `Player Life: ${playerLife}`;
+        playerMana += attacker.card.atk; playerMana = Math.min(playerMana, maxMana); updateManaDisplays();
         showNotification(`Opponent attacks for ${attacker.card.atk}!`);
       }
       updatePlayerZone(); updateOpponentZone(); checkGameOver();
@@ -823,7 +913,6 @@ function opponentPlayCard(card, idx) {
   }
   checkGameOver();
 }
-
 // START
 window.addEventListener('load', showDeckSelectionPopup);
 </script>
