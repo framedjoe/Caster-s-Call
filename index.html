@@ -139,7 +139,7 @@
       padding: calc(4px * var(--scale)); box-shadow: 0 calc(3px * var(--scale)) calc(8px * var(--scale)) rgba(0,0,0,0.4);
       font-size: calc(7px * var(--scale)); color: var(--gold); cursor: pointer; transition: all 0.3s;
     }
-    .player-deck:hover, .opponent-deck:hover { transform: translateY(calc(-5px * var(--scale))); }
+    .player-deck:hover, .opponent-deck:hover, .player-crypt:hover, .opponent-crypt:hover { transform: translateY(calc(-5px * var(--scale))); }
     .player-deck.blue-deck, .opponent-deck.blue-deck {
       background: linear-gradient(to bottom, #172554, #93c5fd);
     }
@@ -224,10 +224,15 @@
     }
     .ai-attack-target { box-shadow: 0 0 0 calc(4px * var(--scale)) #ff0000, 0 0 calc(30px * var(--scale)) #ff0000 !important; animation: aiTargetPulse 1s infinite; }
     @keyframes aiTargetPulse { 0%, 100% { box-shadow: 0 0 0 calc(4px * var(--scale)) #ff0000, 0 0 calc(20px * var(--scale)) #ff0000; } 50% { box-shadow: 0 0 0 calc(6px * var(--scale)) #ff0000, 0 0 calc(40px * var(--scale)) #ff0000; } }
+    #caster-coins {
+      position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 5px 10px;
+      border: 1px solid var(--gold); border-radius: 10px; font-size: 14px; color: var(--gold);
+    }
   </style>
 </head>
 <body>
 <div id="game">
+  <div id="caster-coins">Caster Coins: 0</div>
   <div class="game-title-opponent">Caster's Call</div>
   <div class="game-title-player">Caster's Call</div>
   <div class="turn-info">
@@ -240,7 +245,7 @@
   </div>
   <div class="opponent-hand-container" style="display: flex; align-items: center; gap: calc(1px * var(--scale)); flex: 1 0 auto;">
     <div class="opponent-deck" id="opponent-deck">Deck: 30</div>
-    <div class="opponent-crypt" id="opponent-crypt">Crypt: 0</div>
+    <div class="opponent-crypt" id="opponent-crypt" onclick="openCrypt('opponent')">Crypt: 0</div>
     <div class="opponent-hand zone" style="flex: 1; overflow-x: auto; display: flex; gap: calc(1px * var(--scale));"></div>
   </div>
   <div class="opponent-spell-zones">
@@ -270,7 +275,7 @@
   <div class="player-hand-container" style="display: flex; align-items: center; gap: calc(1px * var(--scale)); flex: 1 0 auto;">
     <div class="player-hand zone" style="flex: 1; overflow-x: auto;"></div>
     <div class="player-deck" id="player-deck">Deck: 30</div>
-    <div class="player-crypt" id="player-crypt">Crypt: 0</div>
+    <div class="player-crypt" id="player-crypt" onclick="openCrypt('player')">Crypt: 0</div>
   </div>
   <div class="status">
     <span id="player-life">Player Life: 20</span>
@@ -330,6 +335,11 @@ const maxHandSize = 7;
 const maxMana = 20;
 const tooltip = document.getElementById('tooltip');
 let selectedHandCard = null;
+let casterCoins = parseInt(localStorage.getItem('casterCoins') || '0');
+function updateCasterCoins() {
+  document.getElementById('caster-coins').innerText = `Caster Coins: ${casterCoins}`;
+  localStorage.setItem('casterCoins', casterCoins);
+}
 const blueCardTemplates = [
   { name: "Holy Lamb", type: "creature", atk: 1, def: 1, mana: 0, art: "holy-lamb.png" },
   { name: "Holy Lamb", type: "creature", atk: 1, def: 1, mana: 0, art: "holy-lamb.png" },
@@ -826,12 +836,35 @@ function playerDraw() {
 }
 function checkGameOver() {
   if (playerLife <= 0) { document.getElementById("game-over-text").innerText = "You Lose!"; document.getElementById("game-over-popup").style.display = "block"; }
-  else if (opponentLife <= 0) { document.getElementById("game-over-text").innerText = "You Win!"; document.getElementById("game-over-popup").style.display = "block"; }
+  else if (opponentLife <= 0) { casterCoins += 10; updateCasterCoins(); document.getElementById("game-over-text").innerText = "You Win! (+10 Caster Coins)"; document.getElementById("game-over-popup").style.display = "block"; }
 }
 function resetGame() { location.reload(); }
 function closeCryptPopup() {
   document.getElementById('player-crypt-popup').style.display = 'none';
   document.getElementById('opponent-crypt-popup').style.display = 'none';
+}
+function openCrypt(side) {
+  const popup = document.getElementById(`${side}-crypt-popup`);
+  const content = document.getElementById(`${side}-crypt-content`);
+  const crypt = side === 'player' ? playerCrypt : opponentCrypt;
+  content.innerHTML = '';
+  crypt.forEach(card => {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.style.margin = 'calc(5px * var(--scale))'; div.style.display = 'inline-block';
+    div.style.width = 'calc(56px * var(--scale))'; div.style.height = 'calc(78px * var(--scale))';
+    if (card.art) {
+      const img = new Image();
+      img.src = `images/${card.art}`;
+      img.style.width = '100%'; img.style.height = '100%'; img.style.objectFit = 'cover';
+      img.onerror = () => div.classList.add('no-art');
+      div.appendChild(img);
+    } else div.classList.add('no-art');
+    div.innerHTML += `<div class="card-name">${card.name}</div>`;
+    addTooltipListeners(div, card);
+    content.appendChild(div);
+  });
+  popup.style.display = 'block';
 }
 // ── AI TURN WITH ATTACKS ──
 function opponentTurn() {
@@ -914,7 +947,7 @@ function opponentPlayCard(card, idx) {
   checkGameOver();
 }
 // START
-window.addEventListener('load', showDeckSelectionPopup);
+window.addEventListener('load', () => { updateCasterCoins(); showDeckSelectionPopup(); });
 </script>
 </body>
 </html>
