@@ -331,6 +331,7 @@ let playerCrypt = [], opponentCrypt = [];
 let isOpponentTurnProcessing = false;
 let playerDeckColor = null, opponentDeckColor = null;
 let turnCount = 1;
+let firstTurn = true; // New flag for first turn
 const maxHandSize = 7;
 const maxMana = 20;
 const tooltip = document.getElementById('tooltip');
@@ -507,6 +508,9 @@ function setupBoard() {
   turnCount = 1; updateTurnDisplay();
   document.getElementById("draw-button").disabled = turn !== "player";
   updateManaDisplays();
+  if (firstTurn) {
+    document.getElementById("attack-button").style.display = "none";
+  }
   if (turn === "opponent") opponentTurn();
 }
 function updatePlayerZone() {
@@ -819,11 +823,13 @@ function endTurn() {
   playerPlayedCards.forEach(e => { if (e.card.type === "creature") e.card.hasAttacked = false; });
   opponentPlayedCards.forEach(e => { if (e.card.type === "creature") e.card.hasAttacked = false; });
   turn = turn === "player" ? "opponent" : "player"; turnCount++;
-  if (turn === "player") playerMana = Math.min(playerMana + 1, maxMana); else opponentMana = Math.min(opponentMana + 1, maxMana);
   updateManaDisplays(); playSound("turn-sound");
+  firstTurn = false; // Disable first turn flag after any endTurn
+  document.getElementById("attack-button").style.display = "inline";
   if (turn === "player") {
     hasDrawn = false; hasUsedFavor = false;
     document.getElementById("draw-button").disabled = false;
+    document.getElementById("draw-button").innerText = "Draw";
     document.getElementById("favor-button").disabled = false; document.getElementById("favor-button").innerText = "Favor";
     document.getElementById("attack-button").disabled = false;
     updateTurnDisplay(); updatePlayerZone(); updateOpponentZone(); updatePlayerSpellZone(); updateOpponentSpellZone();
@@ -832,7 +838,7 @@ function endTurn() {
 }
 function playerDraw() {
   if (turn !== "player" || hasDrawn || attackPhase || playerHand.length >= maxHandSize) return;
-  drawCard(playerDeck, playerHand, ".player-hand"); hasDrawn = true; document.getElementById("draw-button").disabled = true;
+  drawCard(playerDeck, playerHand, ".player-hand"); hasDrawn = true; document.getElementById("draw-button").disabled = true; document.getElementById("draw-button").innerText = "Draw (Used)";
 }
 function checkGameOver() {
   if (playerLife <= 0) { document.getElementById("game-over-text").innerText = "You Lose!"; document.getElementById("game-over-popup").style.display = "block"; }
@@ -884,7 +890,7 @@ function opponentTurn() {
 }
 function opponentAttackPhase() {
   const attackers = opponentPlayedCards.filter(e => !e.card.hasAttacked);
-  if (attackers.length === 0) { setTimeout(() => { isOpponentTurnProcessing = false; endTurn(); }, 800); return; }
+  if (attackers.length === 0 || firstTurn) { setTimeout(() => { isOpponentTurnProcessing = false; endTurn(); }, 800); return; }
   const attackNext = () => {
     if (attackers.length === 0) { setTimeout(() => { isOpponentTurnProcessing = false; endTurn(); }, 1000); return; }
     const attacker = attackers.shift();
