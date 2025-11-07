@@ -10,7 +10,6 @@
       --gold: #ffd700; --gold-glow: rgba(255,215,0,0.6);
       --blue: #87ceeb; --red: #ff6b6b;
       --bg-dark: #0f0c29; --bg-mid: #302b63; --bg-light: #24243e;
-      --scale: 1.5; /* 1440/960 = 1.5x */
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -22,7 +21,7 @@
     }
     @keyframes gradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
     h1, h2, h3, .game-title-opponent, .game-title-player, .turn-indicator, .card-name { font-family: 'Cinzel', serif; }
-  
+ 
     /* 1.5x SCALED GAME BOARD */
     #game {
       position: relative; width: calc(960px * var(--scale)); height: calc(640px * var(--scale)); padding: calc(1px * var(--scale));
@@ -32,6 +31,8 @@
       overflow: hidden;
       display: flex; flex-direction: column; justify-content: space-between;
       transform-origin: top left;
+      max-width: 100vw;
+      max-height: 100vh;
     }
     .game-title-opponent, .game-title-player {
       position: absolute; top: 0; height: 100%; writing-mode: vertical-rl; text-orientation: mixed;
@@ -217,10 +218,13 @@
     #notification.show { opacity: 1; }
     @keyframes particle { to { transform: translateY(calc(-120px * var(--scale))) scale(0); opacity: 0; } }
     @media (max-width: 768px) {
-      #game { padding: calc(15px * var(--scale)); }
+      #game { padding: calc(15px * var(--scale)); width: 100vw; height: auto; }
       .card { width: calc(90px * var(--scale)); height: calc(130px * var(--scale)); }
       .player-monster-zone, .opponent-monster-zone, .player-spell-zone, .opponent-spell-zone { width: calc(100px * var(--scale)); height: calc(140px * var(--scale)); }
       .turn-indicator { font-size: calc(20px * var(--scale)); padding: calc(10px * var(--scale)) calc(20px * var(--scale)); }
+      button { padding: calc(8px * var(--scale)) calc(16px * var(--scale)); font-size: calc(10px * var(--scale)); min-width: calc(80px * var(--scale)); }
+      .opponent-hand-container, .player-hand-container { width: 100%; margin-left: 0; }
+      .zone { min-height: calc(100px * var(--scale)); }
     }
     .ai-attack-target { box-shadow: 0 0 0 calc(4px * var(--scale)) #ff0000, 0 0 calc(30px * var(--scale)) #ff0000 !important; animation: aiTargetPulse 1s infinite; }
     @keyframes aiTargetPulse { 0%, 100% { box-shadow: 0 0 0 calc(4px * var(--scale)) #ff0000, 0 0 calc(20px * var(--scale)) #ff0000; } 50% { box-shadow: 0 0 0 calc(6px * var(--scale)) #ff0000, 0 0 calc(40px * var(--scale)) #ff0000; } }
@@ -889,14 +893,16 @@ function opponentTurn() {
   setTimeout(tryPlay, 800);
 }
 function opponentAttackPhase() {
-  const attackers = opponentPlayedCards.filter(e => !e.card.hasAttacked);
+  const attackers = opponentPlayedCards.filter(e => !e.card.hasAttacked).sort((a,b) => b.card.atk - a.card.atk);
   if (attackers.length === 0 || firstTurn) { setTimeout(() => { isOpponentTurnProcessing = false; endTurn(); }, 800); return; }
   const attackNext = () => {
     if (attackers.length === 0) { setTimeout(() => { isOpponentTurnProcessing = false; endTurn(); }, 1000); return; }
     const attacker = attackers.shift();
     const attackerEl = document.querySelector(`#${attacker.zone} .card`);
     if (!attackerEl) { attackNext(); return; }
-    let target = playerPlayedCards.find(p => p.card.def <= attacker.card.atk);
+    let target = playerPlayedCards
+      .filter(p => p.card.def <= attacker.card.atk)
+      .sort((a,b) => b.card.atk - a.card.atk)[0];
     let targetEl = null;
     if (target) { targetEl = document.querySelector(`#${target.zone} .card`); if (targetEl) targetEl.classList.add('ai-attack-target'); }
     attackerEl.classList.add('attacking'); playSound("attack-sound");
@@ -952,8 +958,35 @@ function opponentPlayCard(card, idx) {
   }
   checkGameOver();
 }
+// Dynamic scaling for responsiveness
+function updateScale() {
+  const baseWidth = 960; // Your original base width
+  const baseHeight = 640; // Your original base height
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  
+  // Calculate scale to fit both width and height, with a min of 0.8 for readability
+  let scale = Math.min(viewportWidth / baseWidth, viewportHeight / baseHeight);
+  scale = Math.max(scale, 0.8); // Prevent too small on tiny devices
+  
+  // For mobile portrait, reduce slightly more if needed
+  if (viewportWidth < 768 && viewportHeight > viewportWidth) {
+    scale *= 0.9; // Slight reduction for portrait mode
+  }
+  
+  document.documentElement.style.setProperty('--scale', scale);
+  
+  // Force layout reflow if needed (helps with immediate resize)
+  document.body.style.display = 'none';
+  setTimeout(() => { document.body.style.display = 'flex'; }, 0);
+}
+
+// Attach listeners
+window.addEventListener('resize', updateScale);
+window.addEventListener('orientationchange', updateScale);
+
 // START
-window.addEventListener('load', () => { updateCasterCoins(); showDeckSelectionPopup(); });
+window.addEventListener('load', () => { updateCasterCoins(); showDeckSelectionPopup(); updateScale(); });
 </script>
 </body>
 </html>
