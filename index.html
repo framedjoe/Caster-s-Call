@@ -10,6 +10,7 @@
       --gold: #ffd700; --gold-glow: rgba(255,215,0,0.6);
       --blue: #87ceeb; --red: #ff6b6b;
       --bg-dark: #0f0c29; --bg-mid: #302b63; --bg-light: #24243e;
+      --scale: 1.5; /* Default scale */
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -21,7 +22,6 @@
     }
     @keyframes gradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
     h1, h2, h3, .game-title-opponent, .game-title-player, .turn-indicator, .card-name { font-family: 'Cinzel', serif; }
- 
     /* 1.5x SCALED GAME BOARD */
     #game {
       position: relative; width: calc(960px * var(--scale)); height: calc(640px * var(--scale)); padding: calc(1px * var(--scale));
@@ -29,7 +29,7 @@
       box-shadow: 0 calc(8px * var(--scale)) calc(32px * var(--scale)) rgba(0,0,0,0.37), 0 0 0 calc(1px * var(--scale)) rgba(255,215,0,0.1);
       backdrop-filter: blur(calc(12px * var(--scale))); border: calc(1px * var(--scale)) solid rgba(255,215,0,0.2);
       overflow: hidden;
-      display: flex; flex-direction: column; justify-content: space-between;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
       transform-origin: top left;
       max-width: 100vw;
       max-height: 100vh;
@@ -44,7 +44,7 @@
     .turn-info { text-align: center; margin: calc(1px * var(--scale)) 0; flex: 0 0 auto; }
     .turn-indicator {
       display: inline-block; padding: calc(3px * var(--scale)) calc(7px * var(--scale));
-      background: linear-gradient(135deg, #1a1a1a, #333);
+      background: linear-gradient(135deg,, #1a1a1a, #333);
       border: calc(1px * var(--scale)) solid var(--gold); border-radius: calc(21px * var(--scale));
       font-size: calc(11px * var(--scale)); font-weight: bold; color: var(--gold);
       text-shadow: 0 0 calc(10px * var(--scale)) var(--gold);
@@ -232,66 +232,122 @@
       position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 5px 10px;
       border: 1px solid var(--gold); border-radius: 10px; font-size: 14px; color: var(--gold);
     }
+    /* City Hub Styles */
+    .hub-container {
+      display: flex; flex-direction: column; align-items: center; gap: calc(16px * var(--scale));
+      padding: calc(20px * var(--scale)); background: rgba(0,0,0,0.5); border-radius: calc(10px * var(--scale));
+      box-shadow: 0 calc(4px * var(--scale)) calc(16px * var(--scale)) rgba(0,0,0,0.5);
+      width: 80%; max-width: calc(400px * var(--scale)); z-index: 999;
+    }
+    .hub-title {
+      font-family: 'Cinzel', serif; font-size: calc(32px * var(--scale)); color: var(--gold);
+      text-shadow: 0 0 calc(10px * var(--scale)) var(--gold); margin-bottom: calc(16px * var(--scale)); text-align: center;
+    }
+    .hub-button {
+      width: 100%; padding: calc(12px * var(--scale)); background: rgba(0,0,0,0.7);
+      border: calc(1px * var(--scale)) solid var(--gold); border-radius: calc(5px * var(--scale));
+      font-family: 'Roboto', sans-serif; font-size: calc(18px * var(--scale)); font-weight: bold; color: var(--gold);
+      text-align: center; cursor: pointer; transition: all 0.3s;
+      box-shadow: 0 calc(2px * var(--scale)) calc(8px * var(--scale)) rgba(255,215,0,0.2);
+    }
+    .hub-button:hover {
+      background: rgba(0,0,0,0.9); box-shadow: 0 calc(4px * var(--scale)) calc(12px * var(--scale)) rgba(255,215,0,0.4);
+      transform: translateY(calc(-2px * var(--scale)));
+    }
+    #game-board { display: none; flex-direction: column; justify-content: space-between; height: 100%; width: 100%; }
+    #back-to-hub { background: linear-gradient(135deg, #999, #666); color: white; display: none; }
+    @media (max-width: 768px) {
+      :root { --scale: 1.0; }
+      .hub-container { padding: calc(10px * var(--scale)); gap: calc(10px * var(--scale)); }
+      .hub-title { font-size: calc(24px * var(--scale)); }
+      .hub-button { font-size: calc(14px * var(--scale)); padding: calc(8px * var(--scale)); }
+    }
+    /* Binder Styles */
+    .binder-card {
+      width: calc(100px * var(--scale)); height: calc(140px * var(--scale)); border-radius: calc(8px * var(--scale));
+      background: #111; box-shadow: 0 calc(4px * var(--scale)) calc(8px * var(--scale)) rgba(0,0,0,0.4);
+      padding: calc(5px * var(--scale)); text-align: center; position: relative; color: #fff;
+      transition: transform 0.3s;
+    }
+    .binder-card:hover { transform: scale(1.05); }
+    .binder-card .card-name { font-size: calc(10px * var(--scale)); color: var(--gold); }
+    .binder-card .card-stats { font-size: calc(8px * var(--scale)); }
+    .binder-card .rarity { position: absolute; bottom: calc(5px * var(--scale)); left: 50%; transform: translateX(-50%); font-size: calc(8px * var(--scale)); text-transform: uppercase; }
+    .rarity-common { color: gray; }
+    .rarity-uncommon { color: green; }
+    .rarity-rare { color: blue; }
+    .rarity-super-rare { color: orange; }
+    #binder-content { display: flex; flex-wrap: wrap; justify-content: center; gap: calc(10px * var(--scale)); }
+    #pack-opening div { opacity: 0; transition: opacity 0.5s; font-size: calc(14px * var(--scale)); color: #fff; margin: calc(5px * var(--scale)); }
   </style>
 </head>
 <body>
 <div id="game">
   <div id="caster-coins">Caster Coins: 0</div>
-  <div class="game-title-opponent">Caster's Call</div>
-  <div class="game-title-player">Caster's Call</div>
-  <div class="turn-info">
-    <div class="turn-indicator" id="turn-indicator">Player's Turn</div>
-    <div class="turn-counter" id="turn-counter">Turn 1</div>
+  <div class="hub-container" id="hub-container">
+    <div class="hub-title">Caster's Call City Hub</div>
+    <div class="hub-button" id="arena-button" tabindex="0" role="button">Arena</div>
+    <div class="hub-button" id="shop-button" tabindex="0" role="button">Shop</div>
+    <div class="hub-button" id="binder-button" tabindex="0" role="button">Binder</div>
   </div>
-  <div class="status">
-    <span id="opponent-life">Opponent Life: 20</span>
-    <div id="opponent-mana-crystals" class="mana-crystals"></div>
-  </div>
-  <div class="opponent-hand-container" style="display: flex; align-items: center; gap: calc(1px * var(--scale)); flex: 1 0 auto;">
-    <div class="opponent-deck" id="opponent-deck">Deck: 30</div>
-    <div class="opponent-crypt" id="opponent-crypt" onclick="openCrypt('opponent')">Crypt: 0</div>
-    <div class="opponent-hand zone" style="flex: 1; overflow-x: auto; display: flex; gap: calc(1px * var(--scale));"></div>
-  </div>
-  <div class="opponent-spell-zones">
-    <div class="opponent-spell-zone" id="opponent-spell-zone-1"></div>
-    <div class="opponent-spell-zone" id="opponent-spell-zone-2"></div>
-    <div class="opponent-spell-zone" id="opponent-spell-zone-3"></div>
-  </div>
-  <div class="opponent-monster-zones">
-    <div class="opponent-monster-zone" id="opponent-monster-zone-1"></div>
-    <div class="opponent-monster-zone" id="opponent-monster-zone-2"></div>
-    <div class="opponent-monster-zone" id="opponent-monster-zone-3"></div>
-    <div class="opponent-monster-zone" id="opponent-monster-zone-4"></div>
-    <div class="opponent-monster-zone" id="opponent-monster-zone-5"></div>
-  </div>
-  <div class="player-monster-zones">
-    <div class="player-monster-zone" id="player-monster-zone-1"></div>
-    <div class="player-monster-zone" id="player-monster-zone-2"></div>
-    <div class="player-monster-zone" id="player-monster-zone-3"></div>
-    <div class="player-monster-zone" id="player-monster-zone-4"></div>
-    <div class="player-monster-zone" id="player-monster-zone-5"></div>
-  </div>
-  <div class="player-spell-zones">
-    <div class="player-spell-zone" id="player-spell-zone-1"></div>
-    <div class="player-spell-zone" id="player-spell-zone-2"></div>
-    <div class="player-spell-zone" id="player-spell-zone-3"></div>
-  </div>
-  <div class="player-hand-container" style="display: flex; align-items: center; gap: calc(1px * var(--scale)); flex: 1 0 auto;">
-    <div class="player-hand zone" style="flex: 1; overflow-x: auto;"></div>
-    <div class="player-deck" id="player-deck">Deck: 30</div>
-    <div class="player-crypt" id="player-crypt" onclick="openCrypt('player')">Crypt: 0</div>
-  </div>
-  <div class="status">
-    <span id="player-life">Player Life: 20</span>
-    <div id="player-mana-crystals" class="mana-crystals"></div>
-  </div>
-  <div style="text-align:center; margin-top:calc(1px * var(--scale)); flex: 0 0 auto;">
-    <button onclick="playerDraw()" id="draw-button">Draw</button>
-    <button onclick="useFavor()" id="favor-button">Favor</button>
-    <button onclick="startAttackPhase()" id="attack-button">Attack</button>
-    <button onclick="endTurn()" id="end-turn">End Turn</button>
-    <button onclick="attackLifePoints()" id="attack-life-button" style="display: none;">Attack Life</button>
-    <button onclick="cancelSelection()" id="cancel-button" style="display: none;">Cancel</button>
+  <div id="game-board">
+    <div class="game-title-opponent">Caster's Call</div>
+    <div class="game-title-player">Caster's Call</div>
+    <div class="turn-info">
+      <div class="turn-indicator" id="turn-indicator">Player's Turn</div>
+      <div class="turn-counter" id="turn-counter">Turn 1</div>
+    </div>
+    <div class="status">
+      <span id="opponent-life">Opponent Life: 20</span>
+      <div id="opponent-mana-crystals" class="mana-crystals"></div>
+    </div>
+    <div class="opponent-hand-container" style="display: flex; align-items: center; gap: calc(1px * var(--scale)); flex: 1 0 auto;">
+      <div class="opponent-deck" id="opponent-deck">Deck: 30</div>
+      <div class="opponent-crypt" id="opponent-crypt" onclick="openCrypt('opponent')">Crypt: 0</div>
+      <div class="opponent-hand zone" style="flex: 1; overflow-x: auto; display: flex; gap: calc(1px * var(--scale));"></div>
+    </div>
+    <div class="opponent-spell-zones">
+      <div class="opponent-spell-zone" id="opponent-spell-zone-1"></div>
+      <div class="opponent-spell-zone" id="opponent-spell-zone-2"></div>
+      <div class="opponent-spell-zone" id="opponent-spell-zone-3"></div>
+    </div>
+    <div class="opponent-monster-zones">
+      <div class="opponent-monster-zone" id="opponent-monster-zone-1"></div>
+      <div class="opponent-monster-zone" id="opponent-monster-zone-2"></div>
+      <div class="opponent-monster-zone" id="opponent-monster-zone-3"></div>
+      <div class="opponent-monster-zone" id="opponent-monster-zone-4"></div>
+      <div class="opponent-monster-zone" id="opponent-monster-zone-5"></div>
+    </div>
+    <div class="player-monster-zones">
+      <div class="player-monster-zone" id="player-monster-zone-1"></div>
+      <div class="player-monster-zone" id="player-monster-zone-2"></div>
+      <div class="player-monster-zone" id="player-monster-zone-3"></div>
+      <div class="player-monster-zone" id="player-monster-zone-4"></div>
+      <div class="player-monster-zone" id="player-monster-zone-5"></div>
+    </div>
+    <div class="player-spell-zones">
+      <div class="player-spell-zone" id="player-spell-zone-1"></div>
+      <div class="player-spell-zone" id="player-spell-zone-2"></div>
+      <div class="player-spell-zone" id="player-spell-zone-3"></div>
+    </div>
+    <div class="player-hand-container" style="display: flex; align-items: center; gap: calc(1px * var(--scale)); flex: 1 0 auto;">
+      <div class="player-hand zone" style="flex: 1; overflow-x: auto;"></div>
+      <div class="player-deck" id="player-deck">Deck: 30</div>
+      <div class="player-crypt" id="player-crypt" onclick="openCrypt('player')">Crypt: 0</div>
+    </div>
+    <div class="status">
+      <span id="player-life">Player Life: 20</span>
+      <div id="player-mana-crystals" class="mana-crystals"></div>
+    </div>
+    <div style="text-align:center; margin-top:calc(1px * var(--scale)); flex: 0 0 auto;">
+      <button onclick="playerDraw()" id="draw-button">Draw</button>
+      <button onclick="useFavor()" id="favor-button">Favor</button>
+      <button onclick="startAttackPhase()" id="attack-button">Attack</button>
+      <button onclick="endTurn()" id="end-turn">End Turn</button>
+      <button onclick="attackLifePoints()" id="attack-life-button" style="display: none;">Attack Life</button>
+      <button onclick="cancelSelection()" id="cancel-button" style="display: none;">Cancel</button>
+      <button id="back-to-hub">Back to Hub</button>
+    </div>
   </div>
   <div id="deck-selection-popup">
     <div>Choose Your Starting Deck</div>
@@ -312,17 +368,38 @@
     <div id="opponent-crypt-content"></div>
     <button class="close-crypt" onclick="closeCryptPopup()">X</button>
   </div>
+  <div id="shop-popup" style="display: none;">
+    <h2 class="hub-title">Caster's Shop</h2>
+    <p id="shop-coins">Caster Coins: 0</p>
+    <div class="hub-button" id="buy-basic">Basic Pack (Free: 3 cards)</div>
+    <div class="hub-button" id="buy-premium">Premium Pack (Free: 5 cards + 1 rare)</div>
+    <div id="pack-opening" style="display: none; margin: calc(10px * var(--scale)) 0;"></div>
+    <div class="hub-button" id="close-shop" style="background: linear-gradient(135deg, #666, #333);">Close</div>
+  </div>
+  <div id="binder-popup" style="display: none;">
+    <h2 class="hub-title">Your Binder</h2>
+    <div id="binder-content"></div>
+    <div class="hub-button" id="close-binder" style="background: linear-gradient(135deg, #666, #333);">Close</div>
+  </div>
   <div id="notification"></div>
   <div id="tooltip" class="card-tooltip"></div>
+
+  <!-- MENU MUSIC -->
+  <audio id="menu-music" loop>
+    <source src="audio/menu_music_casters_call.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
   <audio id="draw-sound" src="https://cdn.jsdelivr.net/gh/freesound/freesound-api@master/sounds/472926__srinivasan__card-shuffle.mp3"></audio>
   <audio id="play-sound" src="https://cdn.jsdelivr.net/gh/freesound/freesound-api@master/sounds/472925__srinivasan__card-place.mp3"></audio>
   <audio id="attack-sound" src="https://cdn.jsdelivr.net/gh/freesound/freesound-api@master/sounds/416179__jorgeolvera__sword-hit.mp3"></audio>
   <audio id="spell-sound" src="https://cdn.jsdelivr.net/gh/freesound/freesound-api@master/sounds/346689__natef006__magic.mp3"></audio>
   <audio id="turn-sound" src="https://cdn.jsdelivr.net/gh/freesound/freesound-api@master/sounds/387233__daronious__chime.mp3"></audio>
 </div>
+
 <script>
 // ────────────────────────────────────────────────────────────────────────
-// FULL GAME LOGIC – WITH AI ATTACKS (SUGGESTION #8)
+// FULL GAME LOGIC – WITH AI ATTACKS + MENU MUSIC + FIXED updateCasterCoins
 // ────────────────────────────────────────────────────────────────────────
 let playerLife = 20, opponentLife = 20;
 let playerMana = 1, opponentMana = 1;
@@ -335,16 +412,32 @@ let playerCrypt = [], opponentCrypt = [];
 let isOpponentTurnProcessing = false;
 let playerDeckColor = null, opponentDeckColor = null;
 let turnCount = 1;
-let firstTurn = true; // New flag for first turn
+let firstTurn = true;
 const maxHandSize = 7;
 const maxMana = 20;
 const tooltip = document.getElementById('tooltip');
 let selectedHandCard = null;
 let casterCoins = parseInt(localStorage.getItem('casterCoins') || '0');
+
+// MENU MUSIC
+const menuMusic = document.getElementById('menu-music');
+
+function playMenuMusic() {
+  menuMusic.volume = 0.4;
+  menuMusic.play().catch(() => {});
+}
+
+function stopMenuMusic() {
+  menuMusic.pause();
+  menuMusic.currentTime = 0;
+}
+
+// FIXED: Restore updateCasterCoins
 function updateCasterCoins() {
   document.getElementById('caster-coins').innerText = `Caster Coins: ${casterCoins}`;
   localStorage.setItem('casterCoins', casterCoins);
 }
+
 const blueCardTemplates = [
   { name: "Holy Lamb", type: "creature", atk: 1, def: 1, mana: 0, art: "holy-lamb.png" },
   { name: "Holy Lamb", type: "creature", atk: 1, def: 1, mana: 0, art: "holy-lamb.png" },
@@ -409,29 +502,48 @@ const redCardTemplates = [
   { name: "Resurrection", type: "spell", effect: "Revive a monster from the Crypt", mana: 2, art: "resurrection.png" },
   { name: "Resurrection", type: "spell", effect: "Revive a monster from the Crypt", mana: 2, art: "resurrection.png" }
 ];
+
 // ── HELPERS ──
-function playSound(id) { const s = document.getElementById(id); if (s) { s.currentTime = 0; s.play().catch(() => {}); } }
-function showNotification(msg) { const n = document.getElementById('notification'); n.innerText = msg; n.classList.add('show'); setTimeout(() => n.classList.remove('show'), 3000); }
+function playSound(id) { 
+  const s = document.getElementById(id); 
+  if (s) { s.currentTime = 0; s.play().catch(() => {}); } 
+}
+function showNotification(msg) { 
+  const n = document.getElementById('notification'); 
+  n.innerText = msg; n.classList.add('show'); 
+  setTimeout(() => n.classList.remove('show'), 3000); 
+}
 function addParticles(el) {
   for (let i = 0; i < 10; i++) {
     const p = document.createElement('div');
     p.style.cssText = `position: absolute; width: calc(6px * var(--scale)); height: calc(6px * var(--scale)); background: #00ff00; border-radius: 50%; pointer-events: none; z-index: 5; left: ${50 + (Math.random()-0.5)*60}px; top: ${80 + (Math.random()-0.5)*40}px; animation: particle 0.8s ease-out forwards;`;
-    el.appendChild(p); setTimeout(() => p.remove(), 800);
+    el.appendChild(p); 
+    setTimeout(() => p.remove(), 800);
   }
 }
 function addTooltipListeners(div, card) {
   div.onmouseenter = () => {
     tooltip.innerHTML = `<h3>${card.name}</h3><div>Type: ${card.type} | Mana: ${card.mana}</div>${card.atk ? `<div>ATK: ${card.atk} | DEF: ${card.def}</div>` : ''}${card.effect ? `<div class="effect">${card.effect}</div>` : ''}`;
-    tooltip.style.left = (event.pageX + 15) + 'px'; tooltip.style.top = (event.pageY - 10) + 'px'; tooltip.classList.add('show');
+    tooltip.style.left = (event.pageX + 15) + 'px'; 
+    tooltip.style.top = (event.pageY - 10) + 'px'; 
+    tooltip.classList.add('show');
   };
   div.onmouseleave = () => tooltip.classList.remove('show');
-  div.onmousemove = e => { tooltip.style.left = (e.pageX + 15) + 'px'; tooltip.style.top = (e.pageY - 10) + 'px'; };
+  div.onmousemove = e => { 
+    tooltip.style.left = (e.pageX + 15) + 'px'; 
+    tooltip.style.top = (e.pageY - 10) + 'px'; 
+  };
 }
 function updateHandPlayability() {
   document.querySelectorAll(".player-hand .card").forEach(div => {
     const c = playerHand.find(x => x.id === div.dataset.id);
-    if (c && c.mana <= playerMana) { div.classList.add("playable"); div.classList.remove("unplayable"); }
-    else { div.classList.add("unplayable"); div.classList.remove("playable"); }
+    if (c && c.mana <= playerMana) { 
+      div.classList.add("playable"); 
+      div.classList.remove("unplayable"); 
+    } else { 
+      div.classList.add("unplayable"); 
+      div.classList.remove("playable"); 
+    }
   });
 }
 function updateTurnDisplay() {
@@ -516,6 +628,7 @@ function setupBoard() {
     document.getElementById("attack-button").style.display = "none";
   }
   if (turn === "opponent") opponentTurn();
+  document.getElementById("back-to-hub").style.display = "inline";
 }
 function updatePlayerZone() {
   for (let i = 1; i <= 5; i++) {
@@ -607,7 +720,7 @@ function updateOpponentSpellZone() {
 }
 function trySelectCardFromHand(div) {
   if (turn !== "player" || attackPhase) return;
-  cancelSelection(); // Clear any previous selection
+  cancelSelection();
   const id = div.dataset.id;
   const card = playerHand.find(c => c.id === id);
   if (!card || card.mana > playerMana) { showNotification("Not enough mana!"); return; }
@@ -828,7 +941,7 @@ function endTurn() {
   opponentPlayedCards.forEach(e => { if (e.card.type === "creature") e.card.hasAttacked = false; });
   turn = turn === "player" ? "opponent" : "player"; turnCount++;
   updateManaDisplays(); playSound("turn-sound");
-  firstTurn = false; // Disable first turn flag after any endTurn
+  firstTurn = false;
   document.getElementById("attack-button").style.display = "inline";
   if (turn === "player") {
     hasDrawn = false; hasUsedFavor = false;
@@ -845,10 +958,20 @@ function playerDraw() {
   drawCard(playerDeck, playerHand, ".player-hand"); hasDrawn = true; document.getElementById("draw-button").disabled = true; document.getElementById("draw-button").innerText = "Draw (Used)";
 }
 function checkGameOver() {
-  if (playerLife <= 0) { document.getElementById("game-over-text").innerText = "You Lose!"; document.getElementById("game-over-popup").style.display = "block"; }
-  else if (opponentLife <= 0) { casterCoins += 10; updateCasterCoins(); document.getElementById("game-over-text").innerText = "You Win! (+10 Caster Coins)"; document.getElementById("game-over-popup").style.display = "block"; }
+  if (playerLife <= 0) { 
+    document.getElementById("game-over-text").innerText = "You Lose!"; 
+    document.getElementById("game-over-popup").style.display = "block"; 
+  } else if (opponentLife <= 0) { 
+    casterCoins += 10; 
+    updateCasterCoins(); 
+    document.getElementById("game-over-text").innerText = "You Win! (+10 Caster Coins)"; 
+    document.getElementById("game-over-popup").style.display = "block"; 
+  }
 }
-function resetGame() { location.reload(); }
+function resetGame() { 
+  document.getElementById('game-over-popup').style.display = 'none'; 
+  backToHub();
+}
 function closeCryptPopup() {
   document.getElementById('player-crypt-popup').style.display = 'none';
   document.getElementById('opponent-crypt-popup').style.display = 'none';
@@ -960,33 +1083,176 @@ function opponentPlayCard(card, idx) {
 }
 // Dynamic scaling for responsiveness
 function updateScale() {
-  const baseWidth = 960; // Your original base width
-  const baseHeight = 640; // Your original base height
+  const baseWidth = 960;
+  const baseHeight = 640;
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
-  
-  // Calculate scale to fit both width and height, with a min of 0.8 for readability
   let scale = Math.min(viewportWidth / baseWidth, viewportHeight / baseHeight);
-  scale = Math.max(scale, 0.8); // Prevent too small on tiny devices
-  
-  // For mobile portrait, reduce slightly more if needed
+  scale = Math.max(scale, 0.8);
   if (viewportWidth < 768 && viewportHeight > viewportWidth) {
-    scale *= 0.9; // Slight reduction for portrait mode
+    scale *= 0.9;
   }
-  
   document.documentElement.style.setProperty('--scale', scale);
-  
-  // Force layout reflow if needed (helps with immediate resize)
   document.body.style.display = 'none';
   setTimeout(() => { document.body.style.display = 'flex'; }, 0);
 }
-
+// City Hub Functions
+function goToArena() {
+  stopMenuMusic();
+  document.getElementById('hub-container').style.display = 'none';
+  document.getElementById('game-board').style.display = 'flex';
+  document.getElementById('game').style.justifyContent = 'space-between';
+  showDeckSelectionPopup();
+}
+function backToHub() {
+  document.getElementById('hub-container').style.display = 'flex';
+  document.getElementById('game-board').style.display = 'none';
+  document.getElementById('game').style.justifyContent = 'center';
+  playerLife = 20; opponentLife = 20;
+  playerMana = 1; opponentMana = 1;
+  playerDeck = []; opponentDeck = [];
+  playerHand = []; opponentHand = [];
+  playerPlayedCards = []; opponentPlayedCards = [];
+  playerSpellField = []; opponentSpellField = [];
+  playerCrypt = []; opponentCrypt = [];
+  turn = "player"; attackPhase = false;
+  hasDrawn = false; hasUsedFavor = false;
+  selectedCard = null;
+  selectedHandCard = null;
+  turnCount = 1;
+  firstTurn = true;
+  playerDeckColor = null; opponentDeckColor = null;
+  isOpponentTurnProcessing = false;
+  document.querySelector('.player-hand').innerHTML = '';
+  document.querySelector('.opponent-hand').innerHTML = '';
+  document.getElementById('player-mana-crystals').innerHTML = '';
+  document.getElementById('opponent-mana-crystals').innerHTML = '';
+  document.getElementById('player-life').innerText = 'Player Life: 20';
+  document.getElementById('opponent-life').innerText = 'Opponent Life: 20';
+  document.getElementById('player-deck').innerText = 'Deck: 30';
+  document.getElementById('opponent-deck').innerText = 'Deck: 30';
+  document.getElementById('player-crypt').innerText = 'Crypt: 0';
+  document.getElementById('opponent-crypt').innerText = 'Crypt: 0';
+  document.getElementById('draw-button').innerText = 'Draw';
+  document.getElementById('favor-button').innerText = 'Favor';
+  document.getElementById('draw-button').disabled = false;
+  document.getElementById('favor-button').disabled = false;
+  document.getElementById('attack-button').disabled = false;
+  document.getElementById('attack-life-button').style.display = 'none';
+  document.getElementById('cancel-button').style.display = 'none';
+  document.getElementById('back-to-hub').style.display = 'none';
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById(`player-monster-zone-${i}`).innerHTML = '';
+    document.getElementById(`opponent-monster-zone-${i}`).innerHTML = '';
+  }
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById(`player-spell-zone-${i}`).innerHTML = '';
+    document.getElementById(`opponent-spell-zone-${i}`).innerHTML = '';
+  }
+  playMenuMusic();
+}
+function openShop() {
+  document.getElementById('hub-container').style.display = 'none';
+  document.getElementById('shop-popup').style.display = 'block';
+  document.getElementById('shop-coins').innerText = `Caster Coins: ${casterCoins}`;
+  document.getElementById('pack-opening').style.display = 'none';
+}
+function closeShop() {
+  document.getElementById('shop-popup').style.display = 'none';
+  document.getElementById('hub-container').style.display = 'flex';
+}
+function assignRarity(mana) {
+  if (mana === 0) return 'common';
+  if (mana === 1) return 'uncommon';
+  if (mana === 2) return 'rare';
+  if (mana >= 3) return 'super-rare';
+  return 'common';
+}
+function buyPack(type) {
+  const cost = 0;
+  const numCards = type === 'basic' ? 3 : 5;
+  const templates = Math.random() < 0.5 ? blueCardTemplates : redCardTemplates;
+  const newCards = [];
+  for (let i = 0; i < numCards; i++) {
+    const randIdx = Math.floor(Math.random() * templates.length);
+    const card = { ...templates[randIdx], id: `${templates[randIdx].name}-${Date.now()}` };
+    card.rarity = assignRarity(card.mana);
+    newCards.push(card);
+  }
+  if (type === 'premium') {
+    const rareTemplates = templates.filter(c => c.mana >= 2);
+    const rare = { ...rareTemplates[Math.floor(Math.random() * rareTemplates.length)], id: `rare-${Date.now()}` };
+    rare.rarity = assignRarity(rare.mana);
+    newCards.push(rare);
+  }
+  let collection = JSON.parse(localStorage.getItem('playerCollection') || '[]');
+  collection = [...collection, ...newCards];
+  localStorage.setItem('playerCollection', JSON.stringify(collection));
+  const openingDiv = document.getElementById('pack-opening');
+  openingDiv.innerHTML = '<p style="color: #fff; font-size: calc(12px * var(--scale));">Opening pack...</p>';
+  openingDiv.style.display = 'block';
+  newCards.forEach((card, idx) => {
+    setTimeout(() => {
+      const cardEl = document.createElement('div');
+      cardEl.className = `rarity-${card.rarity}`;
+      cardEl.textContent = `${card.name} (${card.rarity.toUpperCase()})` + (card.art ? ` (Art: ${card.art})` : '');
+      cardEl.style.opacity = 0;
+      cardEl.style.transition = 'opacity 0.5s';
+      openingDiv.appendChild(cardEl);
+      setTimeout(() => cardEl.style.opacity = 1, 100);
+    }, idx * 500);
+  });
+  showNotification(`Bought ${type} pack! Added ${newCards.length} cards.`);
+}
+function openBinder() {
+  document.getElementById('hub-container').style.display = 'none';
+  document.getElementById('binder-popup').style.display = 'block';
+  loadCollection();
+}
+function closeBinder() {
+  document.getElementById('binder-popup').style.display = 'none';
+  document.getElementById('hub-container').style.display = 'flex';
+}
+function loadCollection() {
+  const content = document.getElementById('binder-content');
+  content.innerHTML = '';
+  const collection = JSON.parse(localStorage.getItem('playerCollection') || '[]');
+  if (collection.length === 0) {
+    content.innerHTML = '<p style="color: #fff; font-size: calc(14px * var(--scale));">No cards in your collection yet!</p>';
+  } else {
+    collection.forEach(card => {
+      const cardEl = document.createElement('div');
+      cardEl.className = 'binder-card';
+      cardEl.innerHTML = `
+        <div class="card-name">${card.name}</div>
+        <div class="card-stats">${card.atk ? `ATK: ${card.atk} DEF: ${card.def}` : card.effect || ''}</div>
+        <div class="rarity rarity-${card.rarity || 'common'}">${(card.rarity || 'Common').toUpperCase()}</div>
+      `;
+      if (card.art) {
+        cardEl.style.backgroundImage = `url('images/${card.art}')`;
+        cardEl.style.backgroundSize = 'cover';
+      }
+      content.appendChild(cardEl);
+    });
+  }
+}
 // Attach listeners
 window.addEventListener('resize', updateScale);
 window.addEventListener('orientationchange', updateScale);
-
 // START
-window.addEventListener('load', () => { updateCasterCoins(); showDeckSelectionPopup(); updateScale(); });
+window.addEventListener('load', () => { 
+  updateCasterCoins(); 
+  updateScale(); 
+  playMenuMusic();
+  document.getElementById('arena-button').addEventListener('click', goToArena);
+  document.getElementById('shop-button').addEventListener('click', openShop);
+  document.getElementById('binder-button').addEventListener('click', openBinder);
+  document.getElementById('back-to-hub').addEventListener('click', backToHub);
+  document.getElementById('close-shop').addEventListener('click', closeShop);
+  document.getElementById('close-binder').addEventListener('click', closeBinder);
+  document.getElementById('buy-basic').addEventListener('click', () => buyPack('basic'));
+  document.getElementById('buy-premium').addEventListener('click', () => buyPack('premium'));
+});
 </script>
 </body>
 </html>
