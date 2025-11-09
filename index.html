@@ -419,11 +419,16 @@ let casterCoins = parseInt(localStorage.getItem('casterCoins') || '0');
 // MENU MUSIC
 const menuMusic = document.getElementById('menu-music');
 function playMenuMusic() {
+  menuMusic.load(); // Added to force reload and prevent abort errors
   menuMusic.volume = 0.4;
   menuMusic.play().then(() => {
     console.log("Menu music playing!");
   }).catch(err => {
     console.error("Audio play failed:", err);
+    if (err.name === 'AbortError') {
+      console.log('Retrying play after abort...');
+      setTimeout(playMenuMusic, 100); // Retry after small delay
+    }
     document.getElementById('music-button').style.display = 'block';
   });
 }
