@@ -289,6 +289,7 @@
     <div class="hub-button" id="arena-button" tabindex="0" role="button">Arena</div>
     <div class="hub-button" id="shop-button" tabindex="0" role="button">Shop</div>
     <div class="hub-button" id="binder-button" tabindex="0" role="button">Binder</div>
+    <div class="hub-button" id="music-button" style="display:none;" tabindex="0" role="button">Enable Music</div>
   </div>
   <div id="game-board">
     <div class="game-title-opponent">Caster's Call</div>
@@ -383,20 +384,17 @@
   </div>
   <div id="notification"></div>
   <div id="tooltip" class="card-tooltip"></div>
-
   <!-- MENU MUSIC -->
   <audio id="menu-music" loop>
     <source src="audio/menu_music_casters_call.mp3" type="audio/mpeg">
     Your browser does not support the audio element.
   </audio>
-
   <audio id="draw-sound" src="https://cdn.jsdelivr.net/gh/freesound/freesound-api@master/sounds/472926__srinivasan__card-shuffle.mp3"></audio>
   <audio id="play-sound" src="https://cdn.jsdelivr.net/gh/freesound/freesound-api@master/sounds/472925__srinivasan__card-place.mp3"></audio>
   <audio id="attack-sound" src="https://cdn.jsdelivr.net/gh/freesound/freesound-api@master/sounds/416179__jorgeolvera__sword-hit.mp3"></audio>
   <audio id="spell-sound" src="https://cdn.jsdelivr.net/gh/freesound/freesound-api@master/sounds/346689__natef006__magic.mp3"></audio>
   <audio id="turn-sound" src="https://cdn.jsdelivr.net/gh/freesound/freesound-api@master/sounds/387233__daronious__chime.mp3"></audio>
 </div>
-
 <script>
 // ────────────────────────────────────────────────────────────────────────
 // FULL GAME LOGIC – WITH AI ATTACKS + MENU MUSIC + FIXED updateCasterCoins
@@ -418,26 +416,26 @@ const maxMana = 20;
 const tooltip = document.getElementById('tooltip');
 let selectedHandCard = null;
 let casterCoins = parseInt(localStorage.getItem('casterCoins') || '0');
-
 // MENU MUSIC
 const menuMusic = document.getElementById('menu-music');
-
 function playMenuMusic() {
   menuMusic.volume = 0.4;
-  menuMusic.play().catch(() => {});
+  menuMusic.play().then(() => {
+    console.log("Menu music playing!");
+  }).catch(err => {
+    console.error("Audio play failed:", err);
+    document.getElementById('music-button').style.display = 'block';
+  });
 }
-
 function stopMenuMusic() {
   menuMusic.pause();
   menuMusic.currentTime = 0;
 }
-
 // FIXED: Restore updateCasterCoins
 function updateCasterCoins() {
   document.getElementById('caster-coins').innerText = `Caster Coins: ${casterCoins}`;
   localStorage.setItem('casterCoins', casterCoins);
 }
-
 const blueCardTemplates = [
   { name: "Holy Lamb", type: "creature", atk: 1, def: 1, mana: 0, art: "holy-lamb.png" },
   { name: "Holy Lamb", type: "creature", atk: 1, def: 1, mana: 0, art: "holy-lamb.png" },
@@ -502,47 +500,46 @@ const redCardTemplates = [
   { name: "Resurrection", type: "spell", effect: "Revive a monster from the Crypt", mana: 2, art: "resurrection.png" },
   { name: "Resurrection", type: "spell", effect: "Revive a monster from the Crypt", mana: 2, art: "resurrection.png" }
 ];
-
 // ── HELPERS ──
-function playSound(id) { 
-  const s = document.getElementById(id); 
-  if (s) { s.currentTime = 0; s.play().catch(() => {}); } 
+function playSound(id) {
+  const s = document.getElementById(id);
+  if (s) { s.currentTime = 0; s.play().catch(() => {}); }
 }
-function showNotification(msg) { 
-  const n = document.getElementById('notification'); 
-  n.innerText = msg; n.classList.add('show'); 
-  setTimeout(() => n.classList.remove('show'), 3000); 
+function showNotification(msg) {
+  const n = document.getElementById('notification');
+  n.innerText = msg; n.classList.add('show');
+  setTimeout(() => n.classList.remove('show'), 3000);
 }
 function addParticles(el) {
   for (let i = 0; i < 10; i++) {
     const p = document.createElement('div');
     p.style.cssText = `position: absolute; width: calc(6px * var(--scale)); height: calc(6px * var(--scale)); background: #00ff00; border-radius: 50%; pointer-events: none; z-index: 5; left: ${50 + (Math.random()-0.5)*60}px; top: ${80 + (Math.random()-0.5)*40}px; animation: particle 0.8s ease-out forwards;`;
-    el.appendChild(p); 
+    el.appendChild(p);
     setTimeout(() => p.remove(), 800);
   }
 }
 function addTooltipListeners(div, card) {
   div.onmouseenter = () => {
     tooltip.innerHTML = `<h3>${card.name}</h3><div>Type: ${card.type} | Mana: ${card.mana}</div>${card.atk ? `<div>ATK: ${card.atk} | DEF: ${card.def}</div>` : ''}${card.effect ? `<div class="effect">${card.effect}</div>` : ''}`;
-    tooltip.style.left = (event.pageX + 15) + 'px'; 
-    tooltip.style.top = (event.pageY - 10) + 'px'; 
+    tooltip.style.left = (event.pageX + 15) + 'px';
+    tooltip.style.top = (event.pageY - 10) + 'px';
     tooltip.classList.add('show');
   };
   div.onmouseleave = () => tooltip.classList.remove('show');
-  div.onmousemove = e => { 
-    tooltip.style.left = (e.pageX + 15) + 'px'; 
-    tooltip.style.top = (e.pageY - 10) + 'px'; 
+  div.onmousemove = e => {
+    tooltip.style.left = (e.pageX + 15) + 'px';
+    tooltip.style.top = (e.pageY - 10) + 'px';
   };
 }
 function updateHandPlayability() {
   document.querySelectorAll(".player-hand .card").forEach(div => {
     const c = playerHand.find(x => x.id === div.dataset.id);
-    if (c && c.mana <= playerMana) { 
-      div.classList.add("playable"); 
-      div.classList.remove("unplayable"); 
-    } else { 
-      div.classList.add("unplayable"); 
-      div.classList.remove("playable"); 
+    if (c && c.mana <= playerMana) {
+      div.classList.add("playable");
+      div.classList.remove("unplayable");
+    } else {
+      div.classList.add("unplayable");
+      div.classList.remove("playable");
     }
   });
 }
@@ -958,18 +955,18 @@ function playerDraw() {
   drawCard(playerDeck, playerHand, ".player-hand"); hasDrawn = true; document.getElementById("draw-button").disabled = true; document.getElementById("draw-button").innerText = "Draw (Used)";
 }
 function checkGameOver() {
-  if (playerLife <= 0) { 
-    document.getElementById("game-over-text").innerText = "You Lose!"; 
-    document.getElementById("game-over-popup").style.display = "block"; 
-  } else if (opponentLife <= 0) { 
-    casterCoins += 10; 
-    updateCasterCoins(); 
-    document.getElementById("game-over-text").innerText = "You Win! (+10 Caster Coins)"; 
-    document.getElementById("game-over-popup").style.display = "block"; 
+  if (playerLife <= 0) {
+    document.getElementById("game-over-text").innerText = "You Lose!";
+    document.getElementById("game-over-popup").style.display = "block";
+  } else if (opponentLife <= 0) {
+    casterCoins += 10;
+    updateCasterCoins();
+    document.getElementById("game-over-text").innerText = "You Win! (+10 Caster Coins)";
+    document.getElementById("game-over-popup").style.display = "block";
   }
 }
-function resetGame() { 
-  document.getElementById('game-over-popup').style.display = 'none'; 
+function resetGame() {
+  document.getElementById('game-over-popup').style.display = 'none';
   backToHub();
 }
 function closeCryptPopup() {
@@ -1240,10 +1237,9 @@ function loadCollection() {
 window.addEventListener('resize', updateScale);
 window.addEventListener('orientationchange', updateScale);
 // START
-window.addEventListener('load', () => { 
-  updateCasterCoins(); 
-  updateScale(); 
-  playMenuMusic();
+window.addEventListener('load', () => {
+  updateCasterCoins();
+  updateScale();
   document.getElementById('arena-button').addEventListener('click', goToArena);
   document.getElementById('shop-button').addEventListener('click', openShop);
   document.getElementById('binder-button').addEventListener('click', openBinder);
@@ -1252,6 +1248,10 @@ window.addEventListener('load', () => {
   document.getElementById('close-binder').addEventListener('click', closeBinder);
   document.getElementById('buy-basic').addEventListener('click', () => buyPack('basic'));
   document.getElementById('buy-premium').addEventListener('click', () => buyPack('premium'));
+  document.getElementById('music-button').addEventListener('click', () => {
+    playMenuMusic();
+    document.getElementById('music-button').style.display = 'none';
+  });
 });
 </script>
 </body>
