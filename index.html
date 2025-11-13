@@ -323,6 +323,119 @@
 .pack-card.reveal { opacity: 1; transform: scale(1.1) rotateY(0deg); }
 .pack-card.rare.reveal { transform: scale(1.3) rotateY(360deg) !important; animation: rare-bounce 1s; }
 @keyframes rare-bounce { 0%,100%{transform:scale(1.1)} 50%{transform:scale(1.4)} }
+#settings-popup {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.9); padding: calc(30px * var(--scale));
+  border: calc(3px * var(--scale)) solid var(--gold); border-radius: calc(16px * var(--scale));
+  text-align: center; color: var(--gold); font-size: calc(18px * var(--scale));
+  z-index: 1000; box-shadow: 0 0 calc(40px * var(--scale)) rgba(255,215,0,0.4);
+  width: 90%; max-width: calc(360px * var(--scale));
+}
+.settings-group {
+  margin: calc(12px * var(--scale)) 0; display: flex; align-items: center;
+  justify-content: space-between; gap: calc(10px * var(--scale));
+}
+.settings-group label { flex: 1; text-align: left; }
+.settings-group input[type=range] { flex: 2; }
+.settings-group span { flex: 0 0 auto; min-width: calc(40px * var(--scale)); }
+#trunk-popup {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.95); padding: calc(20px * var(--scale));
+  border: calc(3px * var(--scale)) solid #8B4513; border-radius: calc(16px * var(--scale));
+  text-align: center; color: var(--gold); font-size: calc(18px * var(--scale));
+  z-index: 1001; box-shadow: 0 0 calc(50px * var(--scale)) rgba(139,69,19,0.5);
+  width: 95%; max-width: calc(800px * var(--scale)); max-height: 80vh; overflow-y: auto;
+}
+
+#trunk-content {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(100px * var(--scale)), 1fr));
+  gap: calc(12px * var(--scale)); padding: calc(10px * var(--scale));
+  justify-items: center;
+}
+
+.trunk-card {
+  width: calc(90px * var(--scale)); height: calc(126px * var(--scale)); border-radius: calc(8px * var(--scale));
+  background: linear-gradient(135deg, #2a1a0f, #4a3723); border: calc(2px * var(--scale)) solid #D2B48C;
+  box-shadow: 0 calc(4px * var(--scale)) calc(12px * var(--scale)) rgba(0,0,0,0.6),
+              inset 0 0 calc(10px * var(--scale)) rgba(255,255,255,0.1);
+  display: flex; flex-direction: column; align-items: center; padding: calc(6px * var(--scale));
+  transition: all 0.3s; cursor: pointer; position: relative; overflow: hidden;
+}
+
+.trunk-card:hover {
+  transform: translateY(calc(-4px * var(--scale))) scale(1.05);
+  box-shadow: 0 calc(8px * var(--scale)) calc(20px * var(--scale)) rgba(210,180,140,0.8);
+}
+
+.trunk-card .card-name { 
+  font-size: calc(8px * var(--scale)); font-weight: bold; color: var(--gold); 
+  text-shadow: 1px 1px 2px #000; margin-top: calc(2px * var(--scale));
+  text-align: center; max-height: calc(20px * var(--scale)); overflow: hidden;
+}
+
+.trunk-card .rarity { 
+  position: absolute; top: calc(2px * var(--scale)); right: calc(2px * var(--scale));
+  font-size: calc(7px * var(--scale)); font-weight: bold; padding: calc(2px * var(--scale));
+  border-radius: calc(3px * var(--scale)); background: rgba(0,0,0,0.7);
+}
+/* FIXED: Binder Popup with SCROLLING GRID */
+#binder-popup {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.9); padding: calc(20px * var(--scale));
+  border: calc(3px * var(--scale)) solid var(--gold); border-radius: calc(16px * var(--scale));
+  text-align: center; color: var(--gold); font-size: calc(18px * var(--scale));
+  z-index: 1000; box-shadow: 0 0 calc(40px * var(--scale)) rgba(255,215,0,0.4);
+  width: 95%; max-width: calc(500px * var(--scale)); 
+  max-height: 85vh; display: flex; flex-direction: column;
+}
+
+#binder-content {
+  flex: 1; /* Takes available space */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(85px * var(--scale)), 1fr));
+  gap: calc(8px * var(--scale));
+  padding: calc(10px * var(--scale));
+  overflow-y: auto; /* SCROLLABLE! */
+  max-height: calc(50vh * var(--scale)); /* Fixed max height */
+  justify-items: center;
+  scrollbar-width: thin; scrollbar-color: var(--gold) rgba(0,0,0,0.5);
+}
+
+#binder-content::-webkit-scrollbar {
+  width: calc(6px * var(--scale));
+}
+#binder-content::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.5); border-radius: calc(3px * var(--scale));
+}
+#binder-content::-webkit-scrollbar-thumb {
+  background: var(--gold); border-radius: calc(3px * var(--scale));
+}
+
+/* Binder Cards - SMALLER */
+.binder-card {
+  width: calc(80px * var(--scale)) !important;
+  height: calc(110px * var(--scale)) !important;
+  border-radius: calc(6px * var(--scale));
+  background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+  border: calc(1.5px * var(--scale)) solid var(--gold);
+  box-shadow: 0 calc(2px * var(--scale)) calc(6px * var(--scale)) rgba(0,0,0,0.6);
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  padding: calc(4px * var(--scale)); transition: all 0.3s; cursor: pointer; overflow: hidden;
+  font-size: calc(6px * var(--scale));
+}
+
+.binder-card .card-name { font-size: calc(7px * var(--scale)); font-weight: bold; color: var(--gold); margin-bottom: calc(2px * var(--scale)); }
+.binder-card .card-stats { font-size: calc(5px * var(--scale)); text-align: center; }
+.binder-card .rarity { 
+  position: absolute; top: calc(2px * var(--scale)); right: calc(2px * var(--scale));
+  font-size: calc(6px * var(--scale)); padding: calc(1px * var(--scale)) calc(3px * var(--scale));
+  border-radius: calc(3px * var(--scale)); background: rgba(0,0,0,0.8);
+}
+
+.binder-card:hover {
+  transform: translateY(calc(-3px * var(--scale))) scale(1.03);
+  box-shadow: 0 calc(6px * var(--scale)) calc(12px * var(--scale)) rgba(255,215,0,0.6);
+}
   </style>
 </head>
 <body>
@@ -333,6 +446,7 @@
     <div class="hub-button" id="arena-button" tabindex="0" role="button">Arena</div>
     <div class="hub-button" id="shop-button" tabindex="0" role="button">Shop</div>
     <div class="hub-button" id="binder-button" tabindex="0" role="button">Binder</div>
+<div class="hub-button" id="settings-button" tabindex="0" role="button">Settings</div>
     <div class="hub-button" id="music-button" style="display:none;" tabindex="0" role="button">Enable Music</div>
   </div>
   <div id="game-board">
@@ -422,12 +536,69 @@
     <div class="hub-button" id="close-shop" style="background: linear-gradient(135deg, #666, #333);">Close</div>
   </div>
   <div id="binder-popup" style="display: none;">
-    <h2 class="hub-title">Your Binder</h2>
-    <div id="binder-content"></div>
+  <h2 class="hub-title">Your Binder</h2>
+  
+  <!-- Trunk Button - FIXED POSITION -->
+  <div style="margin-bottom: calc(10px * var(--scale));">
+    <div class="hub-button" id="trunk-button" style="width: auto; padding: calc(8px * var(--scale)) calc(20px * var(--scale)); font-size: calc(14px * var(--scale));">
+      📦 Trunk (All Pack Cards)
+    </div>
+  </div>
+  
+  <!-- SCROLLABLE GRID -->
+  <div id="binder-content"></div>
+  
+  <!-- Close Button - FIXED POSITION -->
+  <div style="margin-top: calc(10px * var(--scale));">
     <div class="hub-button" id="close-binder" style="background: linear-gradient(135deg, #666, #333);">Close</div>
   </div>
+</div>
+<!-- NEW: Trunk Popup -->
+<div id="trunk-popup" style="display: none;">
+  <h2 class="hub-title">📦 Trunk - All Pack Cards</h2>
+  <p id="trunk-count" style="color: #ffd700; font-size: calc(14px * var(--scale)); margin-bottom: calc(10px * var(--scale));"></p>
+  
+  <div id="trunk-content"></div>
+  
+  <div style="display: flex; gap: calc(10px * var(--scale)); margin-top: calc(20px * var(--scale));">
+    <div class="hub-button" id="close-trunk" style="background: linear-gradient(135deg, #666, #333); flex: 1;">Close</div>
+    <div class="hub-button" id="clear-trunk" style="background: linear-gradient(135deg, #ff4444, #cc0000); flex: 1; color: white;">🗑️ Clear Trunk</div>
+  </div>
+</div>
   <div id="notification"></div>
   <div id="tooltip" class="card-tooltip"></div>
+<div id="settings-popup" style="display:none;">
+  <h2 class="hub-title">Settings</h2>
+
+  <div class="settings-group">
+    <label>UI Sound</label>
+    <input type="range" id="ui-volume" min="0" max="100" value="50">
+    <span id="ui-volume-value">50%</span>
+  </div>
+
+  <div class="settings-group">
+    <label>Music</label>
+    <input type="range" id="music-volume" min="0" max="100" value="30">
+    <span id="music-volume-value">30%</span>
+  </div>
+
+  <!-- NEW: Reset Data button (inside the menu) -->
+  <div class="settings-group" style="margin-top:calc(20px * var(--scale));">
+    <button id="reset-data"
+            style="background:linear-gradient(135deg,#ff4444,#cc0000);
+                   color:white;padding:calc(6px * var(--scale)) calc(12px * var(--scale));
+                   border:none;border-radius:calc(4px * var(--scale));
+                   font-size:calc(12px * var(--scale));cursor:pointer;
+                   width:100%;font-weight:bold;">
+      Reset All Data
+    </button>
+  </div>
+
+  <div class="hub-button" id="close-settings"
+       style="background:linear-gradient(135deg,#666,#333);margin-top:calc(20px * var(--scale));">
+    Close
+  </div>
+</div>
   <!-- MENU MUSIC -->
   <audio id="menu-music" loop>
     <source src="https://www.dropbox.com/scl/fi/qqmfdbkyot5rhj79d29zc/menu_music_casters_call.mp3.mp3?rlkey=mmt48ac4culfjh8x6n7rczyp9&st=n14w5197&dl=1" type="audio/mpeg">
@@ -1287,6 +1458,11 @@ function buyPack(type) {
   let collection = JSON.parse(localStorage.getItem('playerCollection') || '[]');
   collection = [...collection, ...newCards];
   localStorage.setItem('playerCollection', JSON.stringify(collection));
+  
+  // ✅ ALWAYS SAVE TO TRUNK (new + duplicates)
+  let trunkCards = JSON.parse(localStorage.getItem('trunkCards') || '[]');
+  trunkCards.push(...newCards);
+  localStorage.setItem('trunkCards', JSON.stringify(trunkCards));
   const openingDiv = document.getElementById('pack-opening');
   openingDiv.innerHTML = '<p style="color: #fff; font-size: calc(12px * var(--scale));">Opening pack...</p>';
   openingDiv.style.display = 'block';
@@ -1313,30 +1489,109 @@ function closeBinder() {
   document.getElementById('binder-popup').style.display = 'none';
   document.getElementById('hub-container').style.display = 'flex';
 }
+/* ---------- BINDER & TRUNK SYSTEM ---------- */
 function loadCollection() {
   const content = document.getElementById('binder-content');
   content.innerHTML = '';
   const collection = JSON.parse(localStorage.getItem('playerCollection') || '[]');
-  if (collection.length === 0) {
-    content.innerHTML = '<p style="color: #fff; font-size: calc(14px * var(--scale));">No cards in your collection yet!</p>';
-  } else {
-    collection.forEach(card => {
-      const cardEl = document.createElement('div');
-      cardEl.className = 'binder-card';
-cardEl.className = `binder-card rarity-${card.rarity || 'common'}`;
-      cardEl.innerHTML = `
-        <div class="card-name">${card.name}</div>
-        <div class="card-stats">${card.atk ? `ATK: ${card.atk} DEF: ${card.def}` : card.effect || ''}</div>
-        <div class="rarity rarity-${card.rarity || 'common'}">${(card.rarity || 'Common').toUpperCase()}</div>
-      `;
-      if (card.art) {
-        cardEl.style.backgroundImage = `url('images/${card.art}')`;
-        cardEl.style.backgroundSize = 'cover';
-      }
-      content.appendChild(cardEl);
-    });
+  
+  // Migrate old cards to trunk ONCE
+  if (!localStorage.getItem('trunkCards') && collection.length > 0) {
+    localStorage.setItem('trunkCards', JSON.stringify(collection));
+    showNotification('📦 Migrated old cards to Trunk!');
+  }
+  
+  // UNIQUE cards only (removes duplicates by ID)
+  const uniqueCards = [];
+  const seen = new Set();
+  
+  collection.forEach(card => {
+    if (!seen.has(card.id)) {
+      seen.add(card.id);
+      uniqueCards.push(card);
+    }
+  });
+  
+  if (uniqueCards.length === 0) {
+    content.innerHTML = '<p style="color: #fff; font-size: calc(14px * var(--scale)); padding: calc(20px * var(--scale));">No cards in your binder yet!<br><small>Open packs in the Shop!</small></p>';
+    return;
+  }
+  
+  uniqueCards.forEach(card => {
+    const cardEl = document.createElement('div');
+    cardEl.className = `binder-card rarity-${card.rarity || 'common'}`;
+    cardEl.innerHTML = `
+      <div class="card-name">${card.name}</div>
+      <div class="card-stats">${card.atk ? `ATK ${card.atk}<br>DEF ${card.def}` : (card.effect || '').split(' ').slice(0,8).join(' ')}</div>
+      <div class="rarity rarity-${card.rarity || 'common'}">${(card.rarity || 'C')[0]}</div>
+    `;
+    if (card.art) {
+      cardEl.style.backgroundImage = `url('images/${card.art}')`;
+      cardEl.style.backgroundSize = 'cover';
+      cardEl.style.backgroundPosition = 'center';
+    }
+    content.appendChild(cardEl);
+  });
+}
+
+function loadTrunk() {
+  const content = document.getElementById('trunk-content');
+  const countEl = document.getElementById('trunk-count');
+  const allPackCards = JSON.parse(localStorage.getItem('trunkCards') || '[]');
+  
+  countEl.innerText = `Total Pack Cards: ${allPackCards.length}`;
+  content.innerHTML = '';
+  
+  if (allPackCards.length === 0) {
+    content.innerHTML = '<p style="color: #D2B48C; font-size: calc(16px * var(--scale)); grid-column: 1/-1;">Trunk is empty!</p>';
+    return;
+  }
+  
+  // Show ALL cards (with duplicates)
+  allPackCards.slice(-100).reverse().forEach(card => {  // Last 100 for performance
+    const cardEl = document.createElement('div');
+    cardEl.className = `trunk-card rarity-${card.rarity || 'common'}`;
+    cardEl.innerHTML = `
+      <div class="rarity">${(card.rarity || 'Common')[0].toUpperCase()}</div>
+      <div class="card-name">${card.name}</div>
+    `;
+    if (card.art) {
+      const img = document.createElement('img');
+      img.src = `images/${card.art}`;
+      img.style.cssText = `width: 100%; height: calc(70% * var(--scale)); object-fit: cover; border-radius: calc(4px * var(--scale)); margin-bottom: calc(2px * var(--scale));`;
+      img.onerror = () => img.style.background = '#333';
+      cardEl.appendChild(img);
+    }
+    content.appendChild(cardEl);
+  });
+  
+  if (allPackCards.length > 100) {
+    const moreEl = document.createElement('div');
+    moreEl.innerHTML = `<p style="color: #D2B48C; font-size: calc(14px * var(--scale)); grid-column: 1/-1;">... and ${allPackCards.length - 100} more cards</p>`;
+    content.appendChild(moreEl);
   }
 }
+
+function clearTrunk() {
+  if (confirm('Clear ALL pack cards from trunk? This cannot be undone.')) {
+    localStorage.removeItem('trunkCards');
+    loadTrunk();
+    showNotification('🗑️ Trunk cleared!');
+  }
+}
+document.getElementById('trunk-button').addEventListener('click', () => {
+  document.getElementById('binder-popup').style.display = 'none';
+  document.getElementById('trunk-popup').style.display = 'block';
+  loadTrunk();
+});
+
+document.getElementById('close-trunk').addEventListener('click', () => {
+  document.getElementById('trunk-popup').style.display = 'none';
+  document.getElementById('binder-popup').style.display = 'block';  // ← ADD THIS LINE
+  loadCollection();  // Refresh binder
+});
+
+document.getElementById('clear-trunk').addEventListener('click', clearTrunk);
 // Attach listeners
 window.addEventListener('resize', updateScale);
 window.addEventListener('orientationchange', updateScale);
@@ -1429,6 +1684,89 @@ function unlockAudio() {
 // Unlock on first interaction
 document.addEventListener('click', unlockAudio, { once: true });
 document.addEventListener('touchstart', unlockAudio, { once: true });
+/* ---------- SETTINGS POPUP ---------- */
+const settingsBtn   = document.getElementById('settings-button');
+const settingsPop   = document.getElementById('settings-popup');
+const closeSettings = document.getElementById('close-settings');
+
+settingsBtn.addEventListener('click', () => {
+  settingsPop.style.display = 'block';
+  document.getElementById('hub-container').style.display = 'none';
+});
+closeSettings.addEventListener('click', () => {
+  settingsPop.style.display = 'none';
+  document.getElementById('hub-container').style.display = 'flex';
+});
+
+/* ---------- VOLUME SLIDERS ---------- */
+const uiVolSlider   = document.getElementById('ui-volume');
+const uiVolValue    = document.getElementById('ui-volume-value');
+const musicVolSlider= document.getElementById('music-volume');
+const musicVolValue = document.getElementById('music-volume-value');
+
+/* default volumes (0-1) */
+let uiVolume    = 0.5;   // 50%
+let musicVolume = 0.3;   // 30%
+
+// load saved values
+if (localStorage.getItem('uiVolume'))    uiVolume    = +localStorage.getItem('uiVolume');
+if (localStorage.getItem('musicVolume')) musicVolume = +localStorage.getItem('musicVolume');
+
+uiVolSlider.value    = uiVolume    * 100;
+musicVolSlider.value = musicVolume * 100;
+uiVolValue.textContent    = `${Math.round(uiVolume*100)}%`;
+musicVolValue.textContent = `${Math.round(musicVolume*100)}%`;
+
+// UI volume
+uiVolSlider.addEventListener('input', () => {
+  uiVolume = uiVolSlider.value / 100;
+  uiVolValue.textContent = `${uiVolSlider.value}%`;
+  localStorage.setItem('uiVolume', uiVolume);
+  // all UI sounds use this volume
+  ['ui-hover-sound','ui-click-sound','card-hover-sound'].forEach(id => {
+    const s = document.getElementById(id);
+    if (s) s.volume = uiVolume * 0.4;   // base 0.4 → max 0.4
+  });
+});
+
+// Music volume
+musicVolSlider.addEventListener('input', () => {
+  musicVolume = musicVolSlider.value / 100;
+  musicVolValue.textContent = `${musicVolSlider.value}%`;
+  localStorage.setItem('musicVolume', musicVolume);
+  menuMusic.volume   = musicVolume;
+  battleMusic.volume = musicVolume;
+});
+
+/* apply saved volumes on start */
+menuMusic.volume   = musicVolume;
+battleMusic.volume = musicVolume;
+
+/* modify playSound() to respect UI volume */
+function playSound(id) {
+  const s = document.getElementById(id);
+  if (!s) return;
+  s.currentTime = 0;
+
+  // UI sounds
+  if (['ui-hover-sound','ui-click-sound','card-hover-sound'].includes(id)) {
+    s.volume = uiVolume * 0.4;          // max 0.4
+  } else if (id === 'menu-music' || id === 'battle-music') {
+    s.volume = musicVolume;
+  } else {
+    s.volume = 0.5;                     // game SFX
+  }
+  s.play().catch(() => {});
+}
+document.getElementById('reset-data').addEventListener('click', () => {
+  if (confirm('🗑️ DELETE EVERYTHING?\n\n• All Caster Coins\n• All Cards (Binder + Trunk)\n• Sound Settings\n\nThis cannot be undone!')) {
+    localStorage.clear();
+    updateCasterCoins(); // Reset coins display
+    showNotification('🗑️ All data reset! Fresh start!');
+    document.getElementById('settings-popup').style.display = 'none';
+    document.getElementById('hub-container').style.display = 'flex';
+  }
+});
 </script>
 </body>
 </html>
