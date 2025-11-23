@@ -796,6 +796,23 @@ function updateCasterCoins() {
   document.getElementById('caster-coins').innerText = `Caster Coins: ${casterCoins}`;
   localStorage.setItem('casterCoins', casterCoins);
 }
+function startBattle() {
+  updateManaDisplays();
+  updateTurnDisplay();
+  document.getElementById("player-life").innerText = `Player Life: ${playerLife}`;
+  document.getElementById("opponent-life").innerText = `Opponent Life: ${opponentLife}`;
+  updatePlayerDeck();
+  updateOpponentDeck();
+  updatePlayerCrypt();
+  updateOpponentCrypt();
+  updateHandPlayability();
+  makeHandDraggable();
+  attachHandClickListeners();
+
+  if (turn === "opponent") {
+    setTimeout(opponentTurn, 1200);
+  }
+}
 const blueCardTemplates = [
   { name: "Holy Lamb", type: "creature", atk: 1, def: 1, mana: 0, art: "holy-lamb.png" },
   { name: "Holy Lamb", type: "creature", atk: 1, def: 1, mana: 0, art: "holy-lamb.png" },
@@ -1944,16 +1961,16 @@ function startCoinFlip(playerChoice) {
     turn = playerChoice === flipResult ? 'player' : 'opponent';
     
     setTimeout(() => {
-      document.getElementById("coin-flip-popup").style.display = "none";
-      setupBoard();
-      startBattle();
-      
-      showNotification(
-        turn === 'player' 
-          ? `🪙 ${flipResult.toUpperCase()}! You go first!` 
-          : `🪙 ${flipResult.toUpperCase()}! Opponent goes first!`
-      );
-    }, 1500);
+  document.getElementById("coin-flip-popup").style.display = "none";
+  setupBoard();        // draws hands, shuffles, etc.
+  startBattle();       // ← ADD THIS LINE (and define the function below)
+
+  showNotification(
+    turn === 'player'
+      ? `HEADS! You go first!`
+      : `TAILS! Opponent goes first!`
+  );
+}, 1500);
   }, 1600);
 }
 // ── DECK BUILDER SYSTEM ──
