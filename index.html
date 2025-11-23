@@ -6,44 +6,49 @@
   <title>Caster's Call</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    /* ==== TITLE SCREEN (beautiful one we made) ==== */
-    #title-screen {
-      position:fixed; top:0; left:0; width:100vw; height:100vh;
-      background:linear-gradient(-45deg,#0f0c29,#302b63,#24243e,#0f0c29);
-      background-size:400% 400%; animation:gradient 20s ease infinite;
-      display:flex; align-items:center; justify-content:center; z-index:9999;
-      transition:opacity 1.2s;
-    }
-    @keyframes gradient {0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-    .main-title {font-size:clamp(60px,15vw,140px); color:#ffd700; font-family:'Cinzel',serif; font-weight:900;
-      text-shadow:0 0 30px #ffd700,0 0 60px #ffd700,0 0 100px #ffd700; letter-spacing:8px;}
-    .subtitle {font-size:clamp(24px,6vw,56px); color:white; font-family:'Cinzel',serif; margin-top:20px;}
-    #play-title-button {
-      margin-top:80px; padding:20px 80px; font-size:40px; background:#111; color:#ffd700;
-      border:3px solid #ffd700; border-radius:15px; cursor:pointer; font-family:'Cinzel',serif;
-    }
-    #play-title-button:hover {transform:scale(1.1); box-shadow:0 0 60px #ffd700;}
-    .particle {position:absolute; width:6px; height:6px; background:#ffd700; border-radius:50%;
-      pointer-events:none; animation:float 15s infinite linear; opacity:0.6;}
-    @keyframes float {0%{transform:translateY(100vh);opacity:0}10%{opacity:0.6}100%{transform:translateY(-100px) translateX(100px);opacity:0}}
-
-.particle {
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  background: var(--gold);
-  border-radius: 50%;
-  pointer-events: none;
-  animation: float 15s infinite linear;
-  opacity: 0.6;
-  z-index: 1;
+/* TITLE SCREEN – SIMPLE & CLEAN */
+#title-screen {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #0f0c29);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 1.2s ease, visibility 1.2s ease;
 }
-
-@keyframes float {
-  0% { transform: translateY(100vh) translateX(0); opacity: 0; }
-  10% { opacity: 0.6; }
-  90% { opacity: 0.6; }
-  100% { transform: translateY(-100px) translateX(100px); opacity: 0; }
+#title-screen.show {
+  opacity: 1;
+  visibility: visible;
+}
+.title-content {
+  text-align: center;
+  color: var(--gold);
+}
+.main-title {
+  font-family: 'Cinzel', serif;
+  font-size: calc(72px * var(--scale));
+  margin: 0 0 calc(20px * var(--scale));
+  text-shadow: 0 0 calc(30px * var(--scale)) var(--gold-glow);
+  animation: titleGlow 3s infinite alternate;
+}
+.subtitle {
+  font-size: calc(24px * var(--scale));
+  margin-bottom: calc(40px * var(--scale));
+  opacity: 0.9;
+}
+.version {
+  margin-top: calc(40px * var(--scale));
+  font-size: calc(14px * var(--scale));
+  opacity: 0.6;
+}
+@keyframes titleGlow {
+  from { text-shadow: 0 0 calc(20px * var(--scale)) var(--gold-glow); }
+  to   { text-shadow: 0 0 calc(50px * var(--scale)) var(--gold-glow); }
 }
     :root {
       --gold: #ffd700; --gold-glow: rgba(255,215,0,0.6);
@@ -59,23 +64,6 @@
       color: white; display: flex; justify-content: center; align-items: center; padding: 0;
       overflow: hidden;
     }
-/* === FIX: Center all popups properly inside the scaled game === */
-#shop-popup,
-#deckbuilder-popup,
-#binder-popup,
-#trunk-popup,
-#settings-popup,
-#coin-flip-popup,
-#deck-selection-popup,
-#game-over-popup,
-#player-crypt-popup,
-#opponent-crypt-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  /* Remove the old left:50% + translateX(-50%) that broke everything */
-}
     @keyframes gradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
     h1, h2, h3, .game-title-opponent, .game-title-player, .turn-indicator, .card-name { font-family: 'Cinzel', serif; }
     /* 1.5x SCALED GAME BOARD */
@@ -518,28 +506,23 @@
   </style>
 </head>
 <body>
-
-  <!-- TITLE SCREEN (shows first) -->
-  <div id="title-screen">
-    <div style="text-align:center">
-      <h1 class="main-title">Caster's Call</h1>
-      <h2 class="subtitle">Duel of Summoners</h2>
-      <button id="play-title-button">PLAY</button>
-    </div>
+<div id="title-screen">
+  <div class="title-content">
+    <h1 class="main-title">Caster's Call</h1>
+    <p class="subtitle">A Digital Trading Card Game</p>
+    <button id="start-game-btn" class="hub-button">Start Game</button>
+    <div class="version">v1.0</div>
   </div>
-
-  <!-- YOUR FULL GAME (hidden until PLAY is clicked) -->
-  <div id="game" style="display:none;">
-    <!-- ←←← Paste ALL of your old game code here (the hub, board, popups, audio tags, everything) →→→ -->
-    <div id="caster-coins">Caster Coins: 0</div>
-    <div class="hub-container" id="hub-container">
-      <div class="hub-title">City Hub</div>
-      <div class="hub-button" id="arena-button">Arena</div>
-      <div class="hub-button" id="shop-button">Shop</div>
-      <div class="hub-button" id="binder-button">Binder</div>
-      <div class="hub-button" id="settings-button">Settings</div>
-      <div class="hub-button" id="deckbuilder-button">Deck Builder</div>
-    </div>
+</div>
+<div id="game">
+  <div id="caster-coins">Caster Coins: 0</div>
+  <div class="hub-container" id="hub-container">
+    <div class="hub-title">City Hub</div>
+    <div class="hub-button" id="arena-button" tabindex="0" role="button">Arena</div>
+    <div class="hub-button" id="shop-button" tabindex="0" role="button">Shop</div>
+    <div class="hub-button" id="binder-button" tabindex="0" role="button">Binder</div>
+<div class="hub-button" id="settings-button" tabindex="0" role="button">Settings</div>
+<div class="hub-button" id="deckbuilder-button" tabindex="0" role="button">Deck Builder</div>
     <div class="hub-button" id="music-button" style="display:none;" tabindex="0" role="button">Enable Music</div>
   </div>
   <div id="game-board">
@@ -2106,29 +2089,23 @@ function seedStartingCards() {
 
   showNotification("Full card collection unlocked! Check Deck Builder!");
 }
+// TITLE SCREEN → HUB
+document.getElementById('start-game-btn').addEventListener('click', () => {
+  const title = document.getElementById('title-screen');
+  title.style.opacity = '0';
+  setTimeout(() => {
+    title.style.display = 'none';
+    playMenuMusic();           // your existing menu music
+    updateCasterCoins();       // show coins right away
+  }, 1200);
+});
 
-  // Title screen particles + PLAY button (this part was broken)
-    setInterval(() => {
-      if (!document.getElementById('title-screen')) return;
-      const p = document.createElement('div');
-      p.className = 'particle';
-      p.style.left = Math.random() * 100 + 'vw';
-      p.style.animationDuration = (Math.random() * 15 + 10) + 's';
-      document.body.appendChild(p);
-      setTimeout(() => p.remove(), 30000);
-    }, 600);
-
-    document.getElementById('play-title-button').addEventListener('click', () => {
-      document.getElementById('title-screen').style.opacity = '0';
-      playSound('ui-click-sound');
-      playMenuMusic();
-      setTimeout(() => {
-        document.getElementById('title-screen').style.display = 'none';
-        document.getElementById('game').style.display = 'flex';
-        document.getElementById('hub-container').style.display = 'flex';
-        updateCasterCoins();
-      }, 1200);
-    });
-  </script>
+// Show title screen on load
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('title-screen').classList.add('show');
+  }, 100);
+});
+</script>
 </body>
 </html>
