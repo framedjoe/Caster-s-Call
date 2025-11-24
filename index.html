@@ -620,8 +620,8 @@
   <div id="shop-popup" style="display: none;">
     <h2 class="hub-title">Caster's Shop</h2>
     <p id="shop-coins">Caster Coins: 0</p>
-    <div class="hub-button" id="buy-basic">Basic Pack (Free: 3 cards)</div>
-    <div class="hub-button" id="buy-premium">Premium Pack (Free: 5 cards + 1 rare)</div>
+    <div class="hub-button" id="buy-basic">Basic Pack (5 coins: 3 cards)</div>
+<div class="hub-button" id="buy-premium">Premium Pack (10 coins: 5 cards + 1 rare)</div>
     <div id="pack-opening" style="display: none; margin: calc(10px * var(--scale)) 0;"></div>
     <div class="hub-button" id="close-shop" style="background: linear-gradient(135deg, #666, #333);">Close</div>
   </div>
@@ -1614,9 +1614,21 @@ function assignRarity(mana) {
   return 'common';
 }
 function buyPack(type) {
+  const price = type === 'basic' ? 5 : 10;
+  
+  if (casterCoins < price) {
+    showNotification(`Not enough Caster Coins! Need ${price}`);
+    return;
+  }
+  
+  casterCoins -= price;
+  updateCasterCoins(); // Updates display + localStorage
+  document.getElementById('shop-coins').innerText = `Caster Coins: ${casterCoins}`;
+  
   const numCards = type === 'basic' ? 3 : 5;
   const templates = Math.random() < 0.5 ? blueCardTemplates : redCardTemplates;
   const newCards = [];
+  
   // Generate regular cards
   for (let i = 0; i < numCards; i++) {
     const randIdx = Math.floor(Math.random() * templates.length);
@@ -1624,6 +1636,7 @@ function buyPack(type) {
     card.rarity = assignRarity(card.mana);
     newCards.push(card);
   }
+  
   // Premium gets one guaranteed rare+
   if (type === 'premium') {
     const rareTemplates = templates.filter(c => c.mana >= 2);
@@ -1632,15 +1645,16 @@ function buyPack(type) {
     if (rare.mana >= 3) rare.rarity = 'super-rare';
     newCards.push(rare);
   }
+  
   // Save ONLY to trunk
   let trunkCards = JSON.parse(localStorage.getItem('trunkCards') || '[]');
   trunkCards.push(...newCards);
   localStorage.setItem('trunkCards', JSON.stringify(trunkCards));
   
-  // SIMPLE TEXT REVEAL – CLEAN & FAST
+  // SIMPLE TEXT REVEAL
   const openingDiv = document.getElementById('pack-opening');
   openingDiv.innerHTML = `<p style="font-size:calc(20px * var(--scale)); margin-bottom:calc(15px * var(--scale)); font-weight:bold; color:#ffd700;">
-    ${type === 'basic' ? 'Basic' : 'Premium'} Pack Opened!
+    ${type === 'basic' ? 'Basic' : 'Premium'} Pack Opened! (-${price} coins)
   </p>`;
   newCards.forEach(card => {
     const line = document.createElement('div');
@@ -1661,13 +1675,15 @@ function buyPack(type) {
     openingDiv.appendChild(line);
   });
   openingDiv.style.display = 'block';
-  // Auto-close after 5 seconds (or user can click Close)
+  
+  showNotification(`${type === 'basic' ? 'Basic' : 'Premium'} Pack opened!`);
+  
+  // Auto-close after 6 seconds
   setTimeout(() => {
     if (openingDiv.style.display === 'block') {
       openingDiv.style.display = 'none';
     }
   }, 6000);
-  showNotification(`+${newCards.length} cards added to your Trunk!`);
 }
 function openBinder() {
   document.getElementById('hub-container').style.display = 'none';
