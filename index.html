@@ -78,6 +78,8 @@
       max-width: 100vw;
       max-height: 100vh;
     }
+#game { opacity: 0; transition: opacity 0.4s ease; }
+#game.active { opacity: 1; }
     .game-title-opponent, .game-title-player {
       position: absolute; top: 0; height: 100%; writing-mode: vertical-rl; text-orientation: mixed;
       font-size: calc(14px * var(--scale)); font-weight: bold; color: var(--gold); text-align: center;
@@ -2112,8 +2114,9 @@ document.getElementById('start-game-btn').addEventListener('click', () => {
   title.style.opacity = '0';
   setTimeout(() => {
     title.style.display = 'none';
-    playMenuMusic();           // your existing menu music
-    updateCasterCoins();       // show coins right away
+    document.getElementById('game').classList.add('active');  // ← fades in hub smoothly
+    playMenuMusic();
+    updateCasterCoins();
   }, 1200);
 });
 
