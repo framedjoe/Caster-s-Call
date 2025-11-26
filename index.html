@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape">
   <title>Caster's Call</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
@@ -504,6 +504,27 @@
 @keyframes rare-bounce {
   0%, 100% { transform: scale(1.1) rotateY(0); }
   50% { transform: scale(1.5) rotateY(360deg); }
+}
+html, body {
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: none;
+}
+
+/* Force full-screen on mobile landscape */
+@media (max-width: 1024px) and (orientation: landscape) {
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    height: 100dvh; /* fixes iOS Safari */
+    overflow: hidden;
+  }
+  #game {
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+  }
 }
   </style>
 </head>
