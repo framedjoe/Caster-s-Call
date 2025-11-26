@@ -599,6 +599,129 @@ html, body {
     height: calc(8px * var(--scale)) !important;
   }
 }
+/* ───── ELIMINATE MOBILE DEAD SPACE ───── */
+@media (max-width: 768px) {  /* All mobile orientations */
+  body {
+    padding: 0 !important;
+    margin: 0 !important;
+    justify-content: stretch !important;  /* Stretch instead of center */
+    align-items: stretch !important;
+    min-height: 100dvh !important;
+  }
+  
+  #game {
+    width: 100vw !important;
+    height: 100dvh !important;  /* Full dynamic height (fixes iOS bars) */
+    max-width: none !important;
+    max-height: none !important;
+    padding: 0 !important;      /* Remove the 1px padding */
+    border-radius: 0 !important; /* No rounded corners on mobile */
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;  /* Push hub to bottom, board to top */
+  }
+  
+  /* Hub: Full-width buttons, no gaps */
+  #hub-container {
+    width: 100vw !important;
+    height: auto !important;
+    padding: calc(10px * var(--scale)) !important;
+    gap: calc(8px * var(--scale)) !important;  /* Tighter button spacing */
+    justify-content: center !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+  }
+  
+  .hub-button {
+    width: 90% !important;      /* Almost full width */
+    max-width: 300px !important;
+    padding: calc(12px * var(--scale)) !important;
+    font-size: calc(16px * var(--scale)) !important;
+    margin: 0 !important;       /* No extra margins */
+  }
+  
+  .hub-title {
+    font-size: calc(28px * var(--scale)) !important;
+    margin-bottom: calc(10px * var(--scale)) !important;
+  }
+  
+  /* Game Board: Stretch vertically, reduce top/bottom padding */
+  #game-board {
+    width: 100% !important;
+    height: 100% !important;    /* Full available height */
+    padding: calc(5px * var(--scale)) !important;  /* Tiny padding only */
+    justify-content: space-between !important;
+    gap: 0 !important;
+  }
+  
+  /* Status bars: Compact, full width */
+  .status {
+    width: 100% !important;
+    justify-content: space-between !important;
+    padding: calc(4px * var(--scale)) !important;
+    margin: 0 !important;
+  }
+  
+  .status span:first-child {
+    margin-left: calc(10px * var(--scale)) !important;  /* Less indent */
+  }
+  
+  .status span:last-child {
+    margin-right: calc(10px * var(--scale)) !important;
+  }
+  
+  /* Turn info: Centered but compact */
+  .turn-info {
+    margin: calc(2px * var(--scale)) 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Hands: Full width, less height */
+  .opponent-hand-container, .player-hand-container {
+    width: 100% !important;
+    height: calc(60px * var(--scale)) !important;  /* Shorter */
+    margin: 0 !important;
+    padding: calc(2px * var(--scale)) !important;
+  }
+  
+  /* Deck/Crypt: Smaller, inline */
+  .player-deck, .opponent-deck, .player-crypt, .opponent-crypt {
+    width: calc(40px * var(--scale)) !important;
+    height: calc(55px * var(--scale)) !important;
+    font-size: calc(5px * var(--scale)) !important;
+    padding: calc(2px * var(--scale)) !important;
+  }
+  
+  /* Bottom buttons: Full row, no margins */
+  div[style*="text-align:center"] {  /* The button row */
+    width: 100% !important;
+    padding: calc(5px * var(--scale)) !important;
+    margin: 0 !important;
+    gap: calc(5px * var(--scale)) !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+  }
+  
+  button {
+    flex: 1 !important;  /* Buttons stretch to fill row */
+    min-width: calc(60px * var(--scale)) !important;
+    max-width: calc(80px * var(--scale)) !important;
+    padding: calc(8px * var(--scale)) !important;
+    font-size: calc(8px * var(--scale)) !important;
+  }
+}
+
+/* Landscape mobile: Slightly larger for wider screen */
+@media (max-width: 768px) and (orientation: landscape) {
+  :root {
+    --scale: 0.85 !important;  /* Bigger in landscape */
+  }
+  
+  #hub-container .hub-button {
+    width: 80% !important;  /* More room horizontally */
+  }
+}
   </style>
 </head>
 <body>
