@@ -526,6 +526,79 @@ html, body {
     height: 100dvh !important;
   }
 }
+/* ───── PORTRAIT MOBILE FIXES ───── */
+/* Add this to your <style> block */
+@media (max-width: 768px) and (orientation: portrait) {
+  :root {
+    --scale: 0.65 !important; /* Smaller base scale for tall/narrow screens */
+  }
+  
+  /* Full-width hands - no margins, auto-scroll */
+  .opponent-hand-container, 
+  .player-hand-container {
+    width: 100% !important;
+    margin-left: 0 !important;
+    height: calc(70px * var(--scale)) !important; /* Shorter hand area */
+    gap: calc(2px * var(--scale)) !important;
+  }
+  
+  /* Smaller cards for portrait */
+  .card {
+    width: calc(48px * var(--scale)) !important;
+    height: calc(68px * var(--scale)) !important;
+    border-radius: calc(4px * var(--scale)) !important;
+  }
+  
+  /* Compact zones - fewer visible, more scrollable */
+  .opponent-spell-zones, 
+  .opponent-monster-zones, 
+  .player-monster-zones, 
+  .player-spell-zones {
+    gap: calc(2px * var(--scale)) !important;
+    padding: 0 !important;
+  }
+  
+  .player-monster-zone, 
+  .opponent-monster-zone, 
+  .player-spell-zone, 
+  .opponent-spell-zone {
+    width: calc(45px * var(--scale)) !important;
+    height: calc(65px * var(--scale)) !important;
+  }
+  
+  /* Tighter status/life/mana */
+  .status {
+    font-size: calc(6px * var(--scale)) !important;
+    padding: calc(2px * var(--scale)) !important;
+    gap: calc(1px * var(--scale)) !important;
+  }
+  
+  .status span {
+    min-width: calc(60px * var(--scale)) !important;
+    font-size: calc(7px * var(--scale)) !important;
+  }
+  
+  /* Buttons smaller & stacked */
+  button {
+    padding: calc(6px * var(--scale)) calc(10px * var(--scale)) !important;
+    font-size: calc(6px * var(--scale)) !important;
+    min-height: auto !important;
+  }
+  
+  /* Deck/Crypt icons smaller */
+  .player-deck, .opponent-deck, 
+  .player-crypt, .opponent-crypt {
+    width: calc(45px * var(--scale)) !important;
+    height: calc(65px * var(--scale)) !important;
+    font-size: calc(6px * var(--scale)) !important;
+  }
+  
+  /* Mana crystals tiny */
+  .mana-crystal {
+    width: calc(8px * var(--scale)) !important;
+    height: calc(8px * var(--scale)) !important;
+  }
+}
   </style>
 </head>
 <body>
@@ -1533,16 +1606,25 @@ function opponentPlayCard(card, idx) {
 function updateScale() {
   const baseWidth = 960;
   const baseHeight = 640;
-  const viewportWidth = window.innerWidth;
-  const viewportHeight = window.innerHeight;
-  let scale = Math.min(viewportWidth / baseWidth, viewportHeight / baseHeight);
-  scale = Math.max(scale, 0.8);
-  if (viewportWidth < 768 && viewportHeight > viewportWidth) {
-    scale *= 0.9;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  
+  let scale = Math.min(vw / baseWidth, vh / baseHeight);
+  
+  // Portrait mobile: much smaller scale
+  if (vw < 768 && vh > vw) {  // Portrait
+    scale = Math.min(scale, 0.65);  // Cap at 0.65 max
+  } else {
+    scale = Math.max(scale, 0.8);   // Landscape/desktop min 0.8
   }
+  
   document.documentElement.style.setProperty('--scale', scale);
+  
+  // Force reflow
   document.body.style.display = 'none';
-  setTimeout(() => { document.body.style.display = 'flex'; }, 0);
+  requestAnimationFrame(() => {
+    document.body.style.display = 'flex';
+  });
 }
 // City Hub Functions
 function goToArena() {
